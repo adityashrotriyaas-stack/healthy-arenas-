@@ -1,0 +1,187 @@
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
+import { C } from "./colors";
+import { Icon } from "./icons";
+import { DISHES } from "../data/dishes";
+import { supabase } from "./supabase";
+import { authApi, dishesApi } from "../api/client";
+
+const CartContext = createContext();
+function CartProvider({ children }) {
+    const [items, setItems] = useState({});
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const add = useCallback((name, price) => setItems(p => {
+        const key = name.replace(/\s/g, "_");
+        const existing = p[key];
+        return { ...p, [key]: { name, price, qty: (existing ? existing.qty : 0) + 1 } };
+    }), []);
+    const remove = useCallback((name) => setItems(p => {
+        const key = name.replace(/\s/g, "_");
+        const existing = p[key];
+        if (!existing) return p;
+        if (existing.qty > 1) return { ...p, [key]: { ...existing, qty: existing.qty - 1 } };
+        const next = { ...p };
+        delete next[key];
+        return next;
+    }), []);
+    const vals = Object.values(items);
+    const count = vals.reduce((a, b) => a + b.qty, 0);
+    const total = vals.reduce((a, b) => a + parseInt(b.price.replace(/[^0-9]/g, "")) * b.qty, 0);
+    return <CartContext.Provider value={{ items, add, remove, count, total, drawerOpen, setDrawerOpen }}>{children}</CartContext.Provider>;
+}
+function useCart() { return useContext(CartContext); }
+
+const FavContext = createContext();
+function FavProvider({ children }) {
+    const [favs, setFavs] = useState(() => {
+        try { return JSON.parse(localStorage.getItem("favs") || "[]"); } catch (e) { return []; }
+    });
+    const toggle = useCallback((name) => setFavs(p => {
+        const next = p.includes(name) ? p.filter(f => f !== name) : [...p, name];
+        localStorage.setItem("favs", JSON.stringify(next));
+        return next;
+    }), []);
+    return <FavContext.Provider value={{ favs, toggle }}>{children}</FavContext.Provider>;
+}
+function useFav() { return useContext(FavContext); }
+
+const DishesContext = createContext();
+function DishesProvider({ children }) {
+    const [version, setVersion] = useState(0);
+    const getDishes = useCallback(() => {
+        try {
+            const saved = localStorage.getItem("admin_dishes");
+            if (saved) return JSON.parse(saved);
+        } catch (e) {}
+        return DISHES;
+    }, []);
+    const saveDishes = useCallback((dishes) => {
+        localStorage.setItem("admin_dishes", JSON.stringify(dishes));
+        setVersion(v => v + 1);
+    }, []);
+    const loadFromApi = useCallback(async () => {
+        try {
+            const data = await dishesApi.list();
+            if (data?.dishes?.length) {
+                localStorage.setItem("admin_dishes", JSON.stringify(data.dishes));
+                setVersion(v => v + 1);
+            }
+        } catch (e) {}
+    }, []);
+    return <DishesContext.Provider value={{ version, getDishes, saveDishes, setVersion, loadFromApi }}>{children}</DishesContext.Provider>;
+}
+function useDishes() { return useContext(DishesContext); }
+
+const AuthContext = createContext();
+function AuthProvider({ children }) {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    async function fetchProfile(userId) {
+        try {
+            const res = await fetch("/api/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "get", userId }),
+            });
+            const data = await res.json();
+            if (data.user?.name) {
+                const u = {
+                    id: data.user.id,
+                    name: data.user.name,
+                    phone: data.user.phone,
+                    avatar: data.user.name[0].toUpperCase(),
+                    isAdmin: data.user.isAdmin,
+                };
+                setUser(u);
+                return;
+            }
+        } catch (e) {}
+
+        const { data: { user: sbUser } } = await supabase.auth.getUser();
+        if (sbUser) {
+            setUser({
+                id: sbUser.id,
+                name: sbUser.user_metadata?.name || "User",
+                phone: sbUser.phone || "",
+                avatar: (sbUser.user_metadata?.name || sbUser.phone?.[0] || "U").toUpperCase(),
+                isAdmin: false,
+            });
+        }
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            } else {
+                setLoading(false);
+            }
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                fetchProfile(session.user.id);
+            } else {
+                setUser(null);
+                setLoading(false);
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const refreshUser = useCallback(async () => {
+        const { data: { user: sbUser } } = await supabase.auth.getUser();
+        if (sbUser) await fetchProfile(sbUser.id);
+    }, []);
+
+    const logout = useCallback(async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+    }, []);
+
+    return <AuthContext.Provider value={{ user, refreshUser, logout, loading }}>{children}</AuthContext.Provider>;
+}
+function useAuth() { return useContext(AuthContext); }
+
+const ToastContext = createContext();
+function ToastProvider({ children }) {
+    const [toasts, setToasts] = useState([]);
+    const toast = useCallback((msg, type = "info") => {
+        const id = Date.now() + Math.random();
+        setToasts(p => [...p, { id, msg, type }]);
+        setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 2400);
+    }, []);
+    return (
+        <ToastContext.Provider value={{ toast }}>
+            {children}
+            <div style={{
+                position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+                display: "flex", flexDirection: "column", gap: 8, pointerEvents: "none", alignItems: "center",
+            }}>
+                {toasts.map(t => (
+                    <div key={t.id} style={{
+                        background: C.bgCard, border: `1px solid ${t.type === "success" ? "rgba(46,204,113,0.4)" : C.borderO}`,
+                        borderRadius: 12, padding: "10px 20px",
+                        fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream,
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                        animation: "toast-in 0.35s ease-out",
+                        display: "flex", alignItems: "center", gap: 8,
+                        pointerEvents: "auto", whiteSpace: "nowrap",
+                    }}>
+                        <span style={{
+                            width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                            background: t.type === "success" ? "rgba(46,204,113,0.2)" : "rgba(255,94,20,0.2)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 10, color: t.type === "success" ? C.green : C.orange,
+                        }}>{t.type === "success" ? <Icon name="check" size={10} /> : <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.orange }} />}</span>
+                        {t.msg}
+                    </div>
+                ))}
+            </div>
+        </ToastContext.Provider>
+    );
+}
+function useToast() { return useContext(ToastContext); }
+
+export { CartProvider, useCart, FavProvider, useFav, DishesProvider, useDishes, AuthProvider, useAuth, ToastProvider, useToast };
