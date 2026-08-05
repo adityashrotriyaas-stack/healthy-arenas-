@@ -772,7 +772,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                     <span>9634038986</span>
                 </a>
 
-                <button type="button" onClick={() => scroll("order")} style={{
+                <button type="button" onClick={() => scroll("order")} className="nav-order" style={{
                     background: C.orange, border: "none", cursor: "pointer",
                     fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700,
                     color: "#fff", padding: "9px 22px", borderRadius: 50,
@@ -982,7 +982,7 @@ function Hero() {
                         Enjoy fresh juices, protein shakes, nutritious meals, and delicious snacks prepared daily with premium ingredients.
                     </p>
 
-                    <div className="input-focus" style={{
+                    <div className="input-focus address-bar" style={{
                         display: "flex", gap: 0, background: C.bgCard,
                         border: `1.5px solid ${C.borderO}`, borderRadius: 50, overflow: "hidden",
                         maxWidth: 460,
@@ -993,15 +993,15 @@ function Hero() {
                             style={{
                                 flex: 1, background: "none", border: "none", outline: "none",
                                 fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.cream,
-                                padding: "14px 0",
+                                padding: "14px 0", minWidth: 0,
                             }}
                         />
-                        <button type="button" onClick={handleFind}
+                        <button type="button" onClick={handleFind} className="ab-btn"
                             style={{
                                 background: C.orange, border: "none", cursor: "pointer",
                                 fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700,
                                 color: "#fff", padding: "0 28px", margin: 4, borderRadius: 50,
-                                transition: "background 0.2s",
+                                transition: "background 0.2s", whiteSpace: "nowrap",
                             }}
                             onMouseEnter={e => e.currentTarget.style.background = C.orangeDim}
                             onMouseLeave={e => e.currentTarget.style.background = C.orange}
@@ -1441,7 +1441,7 @@ function Menu() {
                         </h2>
                         <div style={{ width: 40, height: 3, background: C.orange, borderRadius: 2, marginTop: 10 }} />
                     </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <div className="diet-filters" style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <button key="all" type="button" onClick={() => setDiet("all")} style={{
                             background: diet === "all" ? "rgba(52,184,106,0.15)" : "rgba(255,255,255,0.04)",
                             border: `1px solid ${diet === "all" ? "rgba(52,184,106,0.4)" : C.border}`,
@@ -1866,7 +1866,7 @@ function OrderCTA() {
                     </div>
                 ) : (
                     <div>
-                        <div className="input-focus" style={{ display: "flex", gap: 0, background: C.bgCard, border: `1.5px solid ${C.borderO}`, borderRadius: 50, overflow: "hidden", maxWidth: 520, margin: "0 auto" }}>
+                                                <div className="input-focus address-bar" style={{ display: "flex", gap: 0, background: C.bgCard, border: `1.5px solid ${C.borderO}`, borderRadius: 50, overflow: "hidden", maxWidth: 520, margin: "0 auto" }}>
                         <div style={{ padding: "0 18px", display: "flex", alignItems: "center" }}><Icon name="home" size={16} style={{ color: C.orange }} /></div>
                             <input
                                 value={address}
@@ -1875,16 +1875,16 @@ function OrderCTA() {
                                 style={{
                                     flex: 1, background: "none", border: "none", outline: "none",
                                     fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.cream,
-                                    padding: "16px 0",
+                                    padding: "16px 0", minWidth: 0,
                                 }}
                             />
-                            <button type="button" onClick={handleOrder}
+                            <button type="button" onClick={handleOrder} className="ab-btn"
                                 style={{
                                     background: address && !checking ? C.orange : "rgba(255,94,20,0.3)", border: "none",
                                     cursor: address && !checking ? "pointer" : "default",
                                     fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700,
                                     color: "#fff", padding: "0 28px", margin: 5, borderRadius: 50,
-                                    transition: "background 0.3s",
+                                    transition: "background 0.3s", whiteSpace: "nowrap",
                                 }}
                             >{checking ? "..." : "Order Now"}</button>
                         </div>
@@ -2209,7 +2209,12 @@ export default function App() {
         }
         .dish-row { flex-wrap: wrap; }
         .dish-row-controls { flex-wrap: wrap; justify-content: flex-end; }
+        .diet-filters { flex-wrap: wrap; }
+        .address-bar { flex-wrap: wrap; }
         @media (max-width: 640px) {
+            .address-bar { gap: 10px; }
+            .address-bar .ab-btn { width: calc(100% - 10px) !important; padding: 12px 0 !important; display: flex; align-items: center; justify-content: center; }
+            .nav-order { display: none !important; }
             .dish-row { gap: 8px !important; padding: 12px !important; }
             .dish-row-controls { width: 100%; justify-content: flex-end; gap: 4px !important; }
             .bottom-nav { display: flex !important; }
