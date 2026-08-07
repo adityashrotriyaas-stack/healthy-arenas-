@@ -51,7 +51,7 @@ function AdminDashboard({ onClose, onAdminOpen }) {
                     <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 14, color: C.cream }}>Admin Dashboard</span>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                    <button type="button" onClick={() => onAdminOpen(true)}
+                    <button type="button" onClick={() => onAdminOpen("dashboard")}
                         style={{ background: "rgba(232,89,12,0.15)", border: `1px solid ${C.borderO}`, cursor: "pointer", borderRadius: 8, padding: "8px 16px", fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: C.orange }}
                     ><Icon name="settings" size={13} style={{ marginRight: 4 }} /> Admin Panel</button>
                     <button type="button" onClick={onClose}
@@ -106,9 +106,9 @@ function AdminDashboard({ onClose, onAdminOpen }) {
                             <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.cream, margin: "0 0 16px" }}>Quick Actions</h3>
                             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                 {[
-                                    { label: "Open Admin Panel", icon: "settings", action: () => onAdminOpen(true), color: C.orange },
-                                    { label: "Add New Dish", icon: "plus", action: () => { onAdminOpen(true); }, color: C.green },
-                                    { label: "View All Orders", icon: "clipboard", action: () => { onAdminOpen(true); }, color: C.amber },
+                                    { label: "Open Admin Panel", icon: "settings", action: () => onAdminOpen("dashboard"), color: C.orange },
+                                        { label: "Add New Dish", icon: "plus", action: () => onAdminOpen("dishes"), color: C.green },
+                                        { label: "View All Orders", icon: "clipboard", action: () => onAdminOpen("orders"), color: C.amber },
                                 ].map(item => (
                                     <button key={item.label} type="button" onClick={item.action}
                                         style={{

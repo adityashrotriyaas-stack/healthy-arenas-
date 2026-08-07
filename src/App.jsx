@@ -759,7 +759,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                                     ><Icon name="home" size={14} /> Dashboard</button>
                                 )}
                                 {user.isAdmin && (
-                                    <button type="button" onClick={() => { onAdminOpen(true); setShowDropdown(false); }}
+                                    <button type="button" onClick={() => { onAdminOpen("dashboard"); setShowDropdown(false); }}
                                         style={{
                                             width: "100%", background: "none", border: "none", cursor: "pointer",
                                             padding: "12px 16px", textAlign: "left", display: "flex", alignItems: "center", gap: 8,
@@ -2050,7 +2050,7 @@ export default function App() {
     const [showPin, setShowPin] = useState(false);
     useEffect(() => {
         window.__openDashboard = () => setShowDashboard(true);
-        window.__openAdmin = () => setShowAdmin(true);
+        window.__openAdmin = () => setShowAdmin("dashboard");
         window.__openPin = () => setShowPin(true);
         return () => { window.__openDashboard = undefined; window.__openAdmin = undefined; window.__openPin = undefined; };
     }, []);
@@ -2141,8 +2141,8 @@ export default function App() {
                 <FloatingOrderBtn />
                 <BottomNav />
                 {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
-                {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} /></Suspense>}
-                {showPin && <AdminPinModal onClose={() => setShowPin(false)} onUnlock={() => { setShowPin(false); setShowAdmin(true); }} />}
+                {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} initialTab={showAdmin} /></Suspense>}
+                {showPin && <AdminPinModal onClose={() => setShowPin(false)} onUnlock={() => { setShowPin(false); setShowAdmin("dashboard"); }} />}
                     </>
                 )}
             </FavProvider>

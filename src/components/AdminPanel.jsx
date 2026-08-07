@@ -5,12 +5,12 @@ import { useDishes, useToast } from "../lib/contexts";
 import { dishesApi, ordersApi, usersApi } from "../api/client";
 import { StatusBadge } from "./StatusBadge";
 
-function AdminPanel({ onClose }) {
+function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const { getDishes, saveDishes, version } = useDishes();
     const { toast } = useToast();
     const [dishes, setDishes] = useState([]);
     const [editIdx, setEditIdx] = useState(null);
-    const [tab, setTab] = useState("dashboard");
+    const [tab, setTab] = useState(initialTab);
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const [saving, setSaving] = useState(false);
