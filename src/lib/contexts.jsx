@@ -80,7 +80,10 @@ function AuthProvider({ children }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "verify-pin", pin }),
         });
-        const data = await res.json();
+        const text = await res.text();
+        if (!text) throw new Error("Server error — try again");
+        let data;
+        try { data = JSON.parse(text); } catch (e) { throw new Error("Unexpected server response — try again"); }
         if (!res.ok) throw new Error(data.error || "Invalid code");
         localStorage.setItem("ha_pin", pin);
         setAdmin(true);

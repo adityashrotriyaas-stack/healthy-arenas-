@@ -5,7 +5,10 @@ async function request(url, options = {}) {
     const pin = localStorage.getItem("ha_pin");
     if (pin) headers["X-Admin-Pin"] = pin;
     const res = await fetch(BASE + url, { ...options, headers });
-    const data = await res.json();
+    const text = await res.text();
+    if (!text) throw new Error(res.ok ? "Empty response from server" : "Server error — try again");
+    let data;
+    try { data = JSON.parse(text); } catch (e) { throw new Error("Unexpected server response — try again"); }
     if (!res.ok) throw new Error(data.error || "Request failed");
     return data;
 }
