@@ -173,6 +173,13 @@ const TAGLINES = [
     ["Eat fresh,", "live well."],
 ];
 
+const HERO_SHOT = [
+    "https://upload.wikimedia.org/wikipedia/commons/7/71/Healthy_Lentil_Salad_%28Unsplash%29.jpg",
+    "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg",
+    "https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg",
+    "https://images.pexels.com/photos/674574/pexels-photo-674574.jpeg",
+];
+
 const CATEGORY_GRADIENTS = {
     Breakfast: "linear-gradient(135deg, #F5A623, #D4870A)",
     "Main Course": "linear-gradient(135deg, #E8590C, #A83030)",
@@ -204,9 +211,12 @@ function dishImg(initial, color, category) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function DishImage({ dish, style }) {
-    const src = useMemo(() => dishImg(dish.initial || dish.name?.[0] || "?", dish.color, dish.category), [dish]);
-    return <img src={src} alt={dish.name} style={style} loading="lazy" />;
+function HeroShot({ src, style }) {
+    const [current, setCurrent] = useState(src);
+    return <img src={current} alt="" style={style} loading="lazy" onError={() => {
+        const rest = HERO_SHOT.filter(s => s !== current);
+        if (rest.length) setCurrent(rest[0]);
+    }} />;
 }
 
 const STORE = { lat: 30.3429, lon: 77.9860, name: "Healthy Arena's Cafe", maxKm: 10 };
@@ -1042,7 +1052,7 @@ function Hero() {
                             border: `2px solid ${C.borderO}`, boxShadow: "0 20px 60px rgba(232,89,12,0.2)",
                             transform: "rotate(6deg)", zIndex: 3,
                         }}>
-                            <DishImage dish={DISHES.find(d => d.name === "Farm Fresh Salad") || DISHES[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <HeroShot src={HERO_SHOT[0]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                         <div style={{
                             position: "absolute", bottom: "5%", left: "5%", width: "50%", aspectRatio: "1/1",
@@ -1050,7 +1060,7 @@ function Hero() {
                             border: `2px solid ${C.borderO}`, boxShadow: "0 20px 60px rgba(232,89,12,0.15)",
                             transform: "rotate(-4deg)", zIndex: 2,
                         }}>
-                            <DishImage dish={DISHES.find(d => d.name === "Chicken Biryani") || DISHES[1]} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <HeroShot src={HERO_SHOT[1]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                         <div style={{
                             position: "absolute", top: "60%", right: "10%", width: "40%", aspectRatio: "1/1",
@@ -1058,7 +1068,7 @@ function Hero() {
                             border: `2px solid ${C.borderO}`, boxShadow: "0 20px 60px rgba(232,89,12,0.2)",
                             transform: "rotate(12deg)", zIndex: 4,
                         }}>
-                            <DishImage dish={DISHES.find(d => d.name === "Mango Smoothie Bowl") || DISHES[2]} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <HeroShot src={HERO_SHOT[2]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                         <div style={{
                             position: "absolute", top: "25%", left: "8%", width: "35%", aspectRatio: "1/1",
@@ -1066,7 +1076,7 @@ function Hero() {
                             border: `2px solid ${C.borderO}`, boxShadow: "0 20px 60px rgba(232,89,12,0.15)",
                             transform: "rotate(-8deg)", zIndex: 1,
                         }}>
-                            <DishImage dish={DISHES.find(d => d.name === "Masala Dosa") || DISHES[3]} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <HeroShot src={HERO_SHOT[3]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                     </div>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
