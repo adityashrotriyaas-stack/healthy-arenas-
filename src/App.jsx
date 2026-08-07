@@ -142,12 +142,9 @@ function ViewAllDishes({ onClose }) {
                 <div style={{ flex: 1, overflow: "auto", padding: "16px 28px 24px" }}>
                     {shown.map((dish, i) => (
                         <div key={dish.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: i < shown.length - 1 ? `1px solid ${C.border}` : "none" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                                <DishImage dish={dish} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
-                                <div>
-                                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{dish.name}</div>
-                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{dish.resto} · {dish.category}</div>
-                                </div>
+                            <div>
+                                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{dish.name}</div>
+                                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{dish.resto} · {dish.category}</div>
                             </div>
                             <div style={{ textAlign: "right" }}>
                                 <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.orange }}>{dish.price}</div>
@@ -1162,8 +1159,6 @@ function DishRow({ dish, index, total }) {
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(232,89,12,0.03)"; e.currentTarget.style.borderLeftColor = C.orange; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderLeftColor = "transparent"; }}
         >
-            <DishImage dish={dish} style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, objectFit: "cover" }} />
-
             <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1220,143 +1215,6 @@ function DishRow({ dish, index, total }) {
                         <button type="button" onClick={handleRemove} style={{ background: "none", border: "none", cursor: "pointer", width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", color: C.orange }}><Icon name="minus" /></button>
                         <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 13, color: C.cream, minWidth: 20, textAlign: "center" }}>{qty}</span>
                         <button type="button" onClick={handleAdd} style={{ background: C.orange, border: "none", cursor: "pointer", width: 26, height: 26, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><Icon name="plus" /></button>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function DishCard({ dish, i, inView }) {
-    const { items, add, remove } = useCart();
-    const { favs, toggle } = useFav();
-    const { toast } = useToast();
-    const [heartAnim, setHeartAnim] = useState(false);
-    const [addAnim, setAddAnim] = useState(false);
-    
-    const hasSizes = !!dish.prices;
-    const [size, setSize] = useState("full");
-    
-    const displayName = hasSizes ? `${dish.name} (${size === "half" ? "Half" : "Full"})` : dish.name;
-    const displayPrice = hasSizes ? dish.prices[size] : dish.price;
-    
-    const qty = items[displayName.replace(/\s/g, "_")]?.qty || 0;
-    const isFav = favs.includes(dish.name);
-    
-    const handleAdd = (e) => {
-        e.stopPropagation();
-        add(displayName, displayPrice);
-        toast(`Added ${displayName}`, "success");
-        setAddAnim(true);
-        setTimeout(() => setAddAnim(false), 300);
-    };
-    const handleRemove = (e) => {
-        e.stopPropagation();
-        remove(displayName);
-        toast(`Removed ${displayName}`, "info");
-    };
-    const handleFav = (e) => {
-        e.stopPropagation();
-        toggle(dish.name);
-        setHeartAnim(true);
-        setTimeout(() => setHeartAnim(false), 350);
-        toast(isFav ? `Removed from favorites` : `Added to favorites`, "success");
-    };
-    
-    return (
-        <div style={{
-            background: C.bgCard, border: `1px solid ${C.border}`,
-            borderRadius: 16, overflow: "hidden",
-            opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)",
-            transition: `all 0.5s ${i * 0.09}s`,
-            cursor: "pointer", boxShadow: "0 0 0 rgba(232,89,12,0)",
-        }}
-            onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${C.borderO}`; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(232,89,12,0.15)"; }}
-            onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${C.border}`; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 0 rgba(232,89,12,0)"; }}
-        >
-            <div style={{ position: "relative" }}>
-                <DishImage dish={dish} style={{ width: "100%", height: 150, objectFit: "cover", display: "block" }} />
-                <button type="button" onClick={handleFav}
-                    style={{
-                        position: "absolute", top: 10, right: 10,
-                        background: "none", border: "none", cursor: "pointer", fontSize: 22,
-                        color: isFav ? C.red : "rgba(255,255,255,0.3)",
-                        animation: heartAnim ? "heart-pop 0.35s ease" : "none",
-                        transition: "all 0.2s",
-                    }}
-                >{isFav ? <Icon name="heartFilled" size={22} style={{ color: C.red }} /> : <Icon name="heart" size={22} style={{ color: "rgba(255,255,255,0.3)" }} />}</button>
-                <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6, alignItems: "center" }}>
-                    <div style={{
-                        width: 18, height: 18, border: `1.5px solid ${dish.veg ? C.green : C.red}`,
-                        borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
-                        background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", padding: 3,
-                    }}>
-                        <div style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            background: dish.veg ? C.green : C.red
-                        }} />
-                    </div>
-                    {dish.tag && (
-                        <div style={{
-                            background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)",
-                            borderRadius: 20, padding: "3px 10px",
-                            fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 700, color: "#fff",
-                        }}>{dish.tag}</div>
-                    )}
-                </div>
-            </div>
-            <div style={{ padding: "16px 18px 18px" }}>
-                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.cream, marginBottom: 4 }}>
-                    {dish.name}
-                </div>
-                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, marginBottom: 12 }}>
-                    {dish.category}
-                </div>
-                
-                {hasSizes && (
-                    <div style={{ display: "flex", background: C.bg, borderRadius: 8, padding: 2, marginBottom: 12, border: `1px solid ${C.border}` }}>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setSize("half"); }} style={{
-                            flex: 1, border: "none", background: size === "half" ? C.orange : "none",
-                            color: size === "half" ? "#fff" : C.creamDim, cursor: "pointer",
-                            fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600,
-                            padding: "6px 0", borderRadius: 6, transition: "all 0.2s"
-                        }}>Half</button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setSize("full"); }} style={{
-                            flex: 1, border: "none", background: size === "full" ? C.orange : "none",
-                            color: size === "full" ? "#fff" : C.creamDim, cursor: "pointer",
-                            fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600,
-                            padding: "6px 0", borderRadius: 6, transition: "all 0.2s"
-                        }}>Full</button>
-                    </div>
-                )}
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 18, color: C.cream }}>{displayPrice}</span>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{dish.time}</span>
-                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.amber }}><Icon name="star" size={11} /> {dish.rating}</span>
-                    </div>
-                </div>
-
-                {qty === 0 ? (
-                    <button type="button" onClick={handleAdd}
-                        style={{
-                            width: "100%", background: C.orange, border: "none", cursor: "pointer",
-                            fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700,
-                            color: "#fff", padding: "10px", borderRadius: 8,
-                            animation: addAnim ? "click-pop 0.3s ease" : "none",
-                            transition: "background 0.2s",
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.background = C.orangeDim}
-                        onMouseLeave={e => e.currentTarget.style.background = C.orange}
-                    ><Icon name="plus" size={14} style={{ marginRight: 4 }} /> Add to Cart</button>
-                ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,94,20,0.1)", border: `1px solid ${C.borderO}`, borderRadius: 8, padding: "6px 12px" }}>
-                        <button type="button" onClick={handleRemove} style={{ background: "none", border: "none", cursor: "pointer", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", color: C.orange }}><Icon name="minus" /></button>
-                        <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.cream }}>{qty}</span>
-                        <button type="button" onClick={handleAdd} style={{ background: C.orange, border: "none", cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><Icon name="plus" /></button>
                     </div>
                 )}
             </div>
@@ -1493,20 +1351,18 @@ function Menu() {
                         const isActive = activeCategory === cat;
                         return (
                             <button key={cat} type="button" onClick={() => scrollToCategory(cat)} style={{
-                                flexShrink: 0, width: 160, height: 100, borderRadius: 14, overflow: "hidden",
-                                border: "none", cursor: "pointer", position: "relative", textAlign: "left", padding: 0,
-                                boxShadow: isActive ? `inset 0 0 0 2px ${C.orange}` : "inset 0 0 0 2px transparent",
+                                flexShrink: 0, borderRadius: 14, cursor: "pointer", textAlign: "left",
+                                background: isActive ? `linear-gradient(135deg, ${C.orange}, ${C.orangeDim})` : C.bgCard,
+                                border: `1px solid ${isActive ? "transparent" : C.border}`,
+                                boxShadow: isActive ? `0 8px 24px rgba(232,89,12,0.25)` : "none",
                                 transition: "all 0.2s", scrollSnapAlign: "start",
+                                padding: "16px 20px", minWidth: 150,
                             }}
-                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.boxShadow = `inset 0 0 0 2px ${C.orange}80`; }}
-                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.boxShadow = "inset 0 0 0 2px transparent"; }}
+                                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.border = `1px solid ${C.borderO}`; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.border = `1px solid ${C.border}`; e.currentTarget.style.transform = "translateY(0)"; } }}
                             >
-                                <DishImage dish={rep} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.05) 100%)" }} />
-                                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px" }}>
-                                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: "#fff", textShadow: "0 1px 6px rgba(0,0,0,0.5)", letterSpacing: "-0.01em" }}>{cat}</div>
-                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.75)", marginTop: 1, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{count} {count === 1 ? "item" : "items"}</div>
-                                </div>
+                                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: isActive ? "#fff" : C.cream, letterSpacing: "-0.01em" }}>{cat}</div>
+                                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 500, color: isActive ? "rgba(255,255,255,0.8)" : C.creamDim, marginTop: 3 }}>{count} {count === 1 ? "item" : "items"}</div>
                             </button>
                         );
                     })}
@@ -1600,21 +1456,19 @@ function FeaturedDishes() {
                             onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.02) translateY(-4px)"; e.currentTarget.style.borderColor = C.borderO; e.currentTarget.style.boxShadow = "0 12px 40px rgba(232,89,12,0.12)"; }}
                             onMouseLeave={e => { e.currentTarget.style.transform = "scale(1) translateY(0)"; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.boxShadow = "none"; }}
                         >
-                            <div style={{ position: "relative" }}>
-                                <DishImage dish={dish} style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }} />
-                                {dish.tag && (
-                                    <div style={{
-                                        position: "absolute", top: 10, left: 10,
-                                        background: dish.tag === "Bestseller" ? C.orange : "rgba(0,0,0,0.55)",
-                                        backdropFilter: "blur(6px)", borderRadius: 20, padding: "3px 12px",
-                                        fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 700, color: "#fff",
-                                    }}>{dish.tag}</div>
-                                )}
-                            </div>
-                            <div style={{ padding: "14px 16px 16px" }}>
-                                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream, marginBottom: 2 }}>{dish.name}</div>
-                                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginBottom: 10 }}>{dish.category}</div>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", minHeight: 120 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
+                                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: C.cream }}>{dish.name}</div>
+                                    {dish.tag && (
+                                        <div style={{
+                                            background: dish.tag === "Bestseller" ? C.orange : "rgba(255,255,255,0.08)",
+                                            borderRadius: 20, padding: "3px 10px",
+                                            fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 700, color: dish.tag === "Bestseller" ? "#fff" : C.amber, whiteSpace: "nowrap",
+                                        }}>{dish.tag}</div>
+                                    )}
+                                </div>
+                                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginBottom: "auto", paddingTop: 2 }}>{dish.category}</div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
                                     <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 16, color: C.orange }}>{dish.price || dish.prices?.full}</span>
                                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                                         <Icon name="star" size={11} style={{ color: C.amber }} />
