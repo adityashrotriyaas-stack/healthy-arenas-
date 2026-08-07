@@ -8,7 +8,7 @@ import { Icon } from "./lib/icons";
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
 const AdminDashboard = lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 
-function AdminPinModal({ onClose }) {
+function AdminPinModal({ onClose, onUnlock }) {
     const { unlock } = useAuth();
     const { toast } = useToast();
     const [pin, setPin] = useState("");
@@ -23,9 +23,11 @@ function AdminPinModal({ onClose }) {
         try {
             await unlock(pin.replace(/\D/g, ""));
             toast("Welcome, Admin!", "success");
-            onClose();
+            onUnlock?.();
         } catch (err) {
-            setError(err.message);
+            setError((err.message && !err.message.includes("Failed to fetch"))
+                ? err.message
+                : "Couldn't reach the server. Check your connection and try again.");
             setLoading(false);
         }
     };
@@ -2330,7 +2332,7 @@ export default function App() {
                 <BottomNav />
                 {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
                 {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} /></Suspense>}
-                {showPin && <AdminPinModal onClose={() => setShowPin(false)} />}
+                {showPin && <AdminPinModal onClose={() => setShowPin(false)} onUnlock={() => { setShowPin(false); setShowAdmin(true); }} />}
                     </>
                 )}
             </FavProvider>
