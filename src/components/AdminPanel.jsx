@@ -403,7 +403,15 @@ function AdminPanel({ onClose }) {
                                                 )}
                                             </div>
                                         </div>
-                                        {o.address && <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 6 }}>📍 {o.address}{o.phone ? ` · 📞 ${o.phone}` : ""}</div>}
+                                        {(o.address || o.phone) && <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 6 }}>
+                                            {o.address && <div>📍 {o.address.split("📍 ")[0]}</div>}
+                                            {o.address?.includes("📍 https://maps.google.com") && (
+                                                <a href={o.address.split("📍 ")[1]} target="_blank" rel="noreferrer"
+                                                    style={{ color: C.orange, textDecoration: "underline", fontSize: 11, fontWeight: 600 }}
+                                                >View on Google Maps ↗</a>
+                                            )}
+                                            {o.phone && <div>📞 {o.phone}</div>}
+                                        </div>}
                                     </div>
                                 ))
                             )}

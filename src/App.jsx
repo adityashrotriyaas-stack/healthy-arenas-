@@ -381,14 +381,29 @@ function CartDrawer() {
     const [checkingOut, setCheckingOut] = useState(false);
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
+    const [loc, setLoc] = useState(null);
+    const [gettingLoc, setGettingLoc] = useState(false);
     const vals = Object.values(items);
+
+    const useMyLocation = async () => {
+        setGettingLoc(true);
+        try {
+            const pos = await checkLocation();
+            if (!pos) { toast("Location unavailable — check browser permission", "info"); return; }
+            setLoc(pos);
+            toast("Current location captured", "success");
+        } finally { setGettingLoc(false); }
+    };
 
     const placeOrder = async (payment) => {
         if (!address) { toast("Enter your delivery address", "info"); return; }
         if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
+        const fullAddress = loc
+            ? `${address}\n📍 https://maps.google.com/?q=${loc.lat},${loc.lon}`
+            : address;
         setCheckingOut(true);
         try {
-            await ordersApi.create({ items: vals, total, address, phone, payment });
+            await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment });
             toast(payment ? "Payment successful! Order placed." : "Order placed! Pay on delivery.", "success");
             setDrawerOpen(false);
         } catch (e) { toast(payment ? "Payment failed" : "Order failed", "info"); setCheckingOut(false); }
@@ -461,6 +476,16 @@ function CartDrawer() {
                                 fontSize: 13, color: C.cream, outline: "none", boxSizing: "border-box",
                             }}
                         />
+                        <button type="button" onClick={useMyLocation} disabled={gettingLoc}
+                            style={{
+                                width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                                background: "rgba(52,184,106,0.1)", border: `1px dashed ${loc ? "rgba(52,184,106,0.5)" : "rgba(52,184,106,0.3)"}`,
+                                cursor: "pointer", borderRadius: 10, padding: "10px", fontFamily: "'Inter',sans-serif",
+                                fontSize: 12, fontWeight: 600, color: C.green, transition: "all 0.2s",
+                            }}
+                            onMouseEnter={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.16)"; }}
+                            onMouseLeave={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.1)"; }}
+                        ><Icon name="pin" size={14} />{gettingLoc ? "Getting location..." : loc ? `✓ Location attached (${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)})` : "Use Current Location"}</button>
                         <div className="input-focus" style={{ display: "flex", marginTop: 10, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
                             <span style={{ display: "flex", alignItems: "center", padding: "0 14px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, borderRight: `1px solid ${C.border}` }}>+91</span>
                             <input
