@@ -431,17 +431,6 @@ function CartDrawer() {
     };
 
     const handleCheckout = () => placeOrder(null);
-    const handlePayOnline = () => {
-        if (!address) { toast("Enter your delivery address", "info"); return; }
-        if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
-        setCheckingOut(true);
-        openRazorpay({
-            amount: total,
-            phone,
-            onSuccess: (r) => placeOrder({ order_id: r.razorpay_order_id, payment_id: r.razorpay_payment_id, razorpay_signature: r.razorpay_signature }),
-            onDismiss: () => setCheckingOut(false),
-        }).catch(() => setCheckingOut(false));
-    };
     return (
         <>
             {drawerOpen && <div onClick={() => setDrawerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.5)" }} />}
@@ -525,21 +514,16 @@ function CartDrawer() {
                             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, color: C.cream }}>Total</span>
                             <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 20, color: C.orange }}>₹{total.toLocaleString()}</span>
                         </div>
-                        <button type="button" disabled={checkingOut} onClick={handlePayOnline}
+                        <button type="button" disabled={checkingOut} onClick={handleCheckout}
                             style={{
                                 width: "100%", background: checkingOut ? "rgba(232,89,12,0.5)" : C.orange, border: "none", cursor: checkingOut ? "default" : "pointer",
                                 fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700,
-                                color: "#fff", padding: "14px", borderRadius: 12, marginBottom: 10,
+                                color: "#fff", padding: "14px", borderRadius: 12, marginTop: 8,
                             }}
-                        >{checkingOut ? "Placing order..." : "Pay Online · ₹" + total.toLocaleString()}</button>
-                        <button type="button" disabled={checkingOut} onClick={handleCheckout}
-                            style={{
-                                width: "100%", background: "transparent", border: `1px solid ${C.border}`,
-                                cursor: checkingOut ? "default" : "pointer",
-                                fontFamily: "'Playfair Display',serif", fontSize: 14, fontWeight: 700,
-                                color: C.cream, padding: "12px", borderRadius: 12,
-                            }}
-                        >Place Order (COD)</button>
+                        >{checkingOut ? "Placing order..." : "Place Order (COD) · ₹" + total.toLocaleString()}</button>
+                        <div style={{ textAlign: "center", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 10 }}>
+                            Online payments coming soon — COD only for now
+                        </div>
                     </div>
                 )}
             </div>
