@@ -102,7 +102,7 @@ function ToastProvider({ children }) {
         <ToastContext.Provider value={{ toast }}>
             {children}
             <div style={{
-                position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 300,
+                position: "fixed", top: 80, left: "50%", transform: "translateX(-50%)", zIndex: 950,
                 display: "flex", flexDirection: "column", gap: 8, pointerEvents: "none", alignItems: "center",
             }}>
                 {toasts.map(t => (
