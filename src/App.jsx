@@ -169,23 +169,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const CATEGORY_ICONS = {
-    Breakfast: "🥞",
-    "Main Course": "🍛",
-    Rice: "🍚",
-    "Lunch & Dinner": "🍽️",
-    Maggie: "🍜",
-    Noodles: "🥡",
-    Rolls: "🌯",
-    "Snacks & Starters": "🥟",
-    Juices: "🧃",
-    Coolers: "🥤",
-    Shakes: "🥤",
-    Beverages: "☕",
-    "Healthy Diet": "🥗",
-    "Add-ons": "🧀",
-};
-
 const TAGLINES = [
     ["Healthy food,", "delicious taste."],
     ["Fresh ingredients,", "every single day."],
@@ -213,12 +196,13 @@ const CATEGORY_GRADIENTS = {
 
 function dishImg(initial, color, category) {
     const colors = (color || CATEGORY_GRADIENTS[category] || "linear-gradient(135deg, #E8590C, #C04A08)").match(/#[0-9A-Fa-f]{6}/g) || ["#E8590C", "#C04A08"];
-    const emoji = (CATEGORY_ICONS || {})[category] || "🍽️";
+    const letter = (initial || "?").charAt(0).toUpperCase();
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
         <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${colors[0]}"/><stop offset="100%" stop-color="${colors[1]}"/></linearGradient></defs>
         <rect width="200" height="200" fill="url(#g)"/>
-        <text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-size="80">${emoji}</text>
-        <text x="100" y="180" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="700" fill="rgba(255,255,255,0.5)">${initial}</text>
+        <circle cx="100" cy="100" r="52" fill="rgba(255,255,255,0.12)"/>
+        <circle cx="100" cy="100" r="44" fill="rgba(255,255,255,0.10)"/>
+        <text x="100" y="104" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="58" font-weight="700" fill="#fff" letter-spacing="1">${letter}</text>
     </svg>`;
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
