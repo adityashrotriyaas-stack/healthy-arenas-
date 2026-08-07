@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } fro
 import { C } from "./lib/colors";
 import { CartProvider, FavProvider, DishesProvider, AuthProvider, ToastProvider, useAuth, useCart, useFav, useDishes, useToast } from "./lib/contexts";
 import { DISHES, FEATURED_TAGS } from "./data/dishes";
-import { dishesApi, ordersApi } from "./api/client";
+import { ordersApi } from "./api/client";
 import { Icon } from "./lib/icons";
 
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
@@ -467,6 +467,7 @@ function CheckoutView() {
     };
 
     const placeOrder = async () => {
+        if (checkingOut) return;
         if (mode === "delivery" && !address) { toast("Enter your delivery address", "info"); return; }
         if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
         const fullAddress = mode === "delivery"
@@ -571,7 +572,7 @@ function CheckoutView() {
                                     <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>₹{total.toLocaleString()}</span>
                                 </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
-                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Delivery</span>
+                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>{mode === "delivery" ? "Delivery" : "Pickup"}</span>
                                     <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.green }}>Free</span>
                                 </div>
                             </div>
