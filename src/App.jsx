@@ -193,8 +193,26 @@ const TAGLINES = [
     ["Eat fresh,", "live well."],
 ];
 
+const CATEGORY_GRADIENTS = {
+    Breakfast: "linear-gradient(135deg, #F5A623, #D4870A)",
+    "Main Course": "linear-gradient(135deg, #E8590C, #A83030)",
+    Rice: "linear-gradient(135deg, #D4870A, #A86508)",
+    "Lunch & Dinner": "linear-gradient(135deg, #34B86A, #1A7A42)",
+    Maggie: "linear-gradient(135deg, #F5A623, #E8590C)",
+    Noodles: "linear-gradient(135deg, #34B86A, #C04A08)",
+    Rolls: "linear-gradient(135deg, #F5A623, #C04A08)",
+    "Snacks & Starters": "linear-gradient(135deg, #E54848, #A83030)",
+    Juices: "linear-gradient(135deg, #F5A623, #D4870A)",
+    Coolers: "linear-gradient(135deg, #34B86A, #1A7A42)",
+    Shakes: "linear-gradient(135deg, #E54848, #7A2020)",
+    Beverages: "linear-gradient(135deg, #A83030, #7A2020)",
+    Soups: "linear-gradient(135deg, #34B86A, #0F4D28)",
+    "Healthy Diet": "linear-gradient(135deg, #34B86A, #0F4D28)",
+    "Add-ons": "linear-gradient(135deg, #D4870A, #A86508)",
+};
+
 function dishImg(initial, color, category) {
-    const colors = color.match(/#[0-9A-Fa-f]{6}/g) || ["#E8590C", "#C04A08"];
+    const colors = (color || CATEGORY_GRADIENTS[category] || "linear-gradient(135deg, #E8590C, #C04A08)").match(/#[0-9A-Fa-f]{6}/g) || ["#E8590C", "#C04A08"];
     const emoji = (CATEGORY_ICONS || {})[category] || "🍽️";
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
         <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${colors[0]}"/><stop offset="100%" stop-color="${colors[1]}"/></linearGradient></defs>
@@ -205,101 +223,9 @@ function dishImg(initial, color, category) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-const IMG_URLS = {
-    "maggie": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Hostel_Maggi.jpg",
-    "maggi": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Hostel_Maggi.jpg",
-    "noodles": "https://upload.wikimedia.org/wikipedia/commons/5/56/Instantnoodles.jpg",
-    "chow mein": "https://upload.wikimedia.org/wikipedia/commons/5/56/Instantnoodles.jpg",
-    "hakka noodle": "https://upload.wikimedia.org/wikipedia/commons/5/56/Instantnoodles.jpg",
-    "orange juice": "https://upload.wikimedia.org/wikipedia/commons/6/67/Orange_juice_1_edit1.jpg",
-    "lemon juice": "https://upload.wikimedia.org/wikipedia/commons/6/67/Orange_juice_1_edit1.jpg",
-    "fresh lime": "https://upload.wikimedia.org/wikipedia/commons/6/67/Orange_juice_1_edit1.jpg",
-    "cola": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tumbler_of_cola_with_ice.jpg",
-    "soft drink": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tumbler_of_cola_with_ice.jpg",
-    "cold drink": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tumbler_of_cola_with_ice.jpg",
-    "soda": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tumbler_of_cola_with_ice.jpg",
-    "milk shake": "https://images.pexels.com/photos/4753639/pexels-photo-4753639.jpeg",
-    "milkshake": "https://images.pexels.com/photos/4753639/pexels-photo-4753639.jpeg",
-    "smoothie": "https://images.pexels.com/photos/4753639/pexels-photo-4753639.jpeg",
-    "lassi": "https://images.pexels.com/photos/4753639/pexels-photo-4753639.jpeg",
-    "paratha": "https://images.pexels.com/photos/6947305/pexels-photo-6947305.jpeg",
-    "pancake": "https://images.pexels.com/photos/904089/pexels-photo-904089.jpeg",
-    "french toast": "https://images.pexels.com/photos/6947305/pexels-photo-6947305.jpeg",
-    "salad": "https://upload.wikimedia.org/wikipedia/commons/7/71/Healthy_Lentil_Salad_%28Unsplash%29.jpg",
-    "soup": "https://images.pexels.com/photos/8851090/pexels-photo-8851090.jpeg",
-    "french fries": "https://images.pexels.com/photos/4109272/pexels-photo-4109272.jpeg",
-    "potato wedges": "https://images.pexels.com/photos/4109272/pexels-photo-4109272.jpeg",
-    "ice cream": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ice_Cream_dessert_02.jpg",
-    "brownie": "https://images.pexels.com/photos/17272970/pexels-photo-17272970.jpeg",
-    "coffee": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg",
-    "tea": "https://images.pexels.com/photos/1311475/pexels-photo-1311475.jpeg",
-    "chai": "https://images.pexels.com/photos/1311475/pexels-photo-1311475.jpeg",
-    "sandwich": "https://foodish-api.com/images/burger/burger1.jpg",
-};
-
-const FOODISH_MAP = [
-    ["dosa", "dosa"], ["idli", "idly"], ["idly", "idly"], ["vada", "samosa"],
-    ["samosa", "samosa"], ["momo", "samosa"], ["spring roll", "samosa"],
-    ["burger", "burger"], ["pizza", "pizza"], ["pasta", "pizza"],
-    ["macaroni", "pizza"], ["biryani", "rice"], ["pulao", "rice"],
-    ["fried rice", "rice"], ["curry", "butter-chicken"],
-    ["paneer", "butter-chicken"], ["butter chicken", "butter-chicken"],
-    ["dal", "butter-chicken"], ["rajma", "butter-chicken"],
-    ["chole", "butter-chicken"], ["kadhai", "butter-chicken"],
-    ["shahi", "butter-chicken"], ["palak", "butter-chicken"],
-    ["mixed veg", "butter-chicken"], ["mushroom", "butter-chicken"],
-    ["matar", "butter-chicken"], ["aloo", "butter-chicken"],
-    ["gobi", "butter-chicken"], ["kofta", "butter-chicken"],
-    ["veg curry", "butter-chicken"], ["chicken", "butter-chicken"],
-    ["egg curry", "butter-chicken"], ["naan", "butter-chicken"],
-    ["roti", "butter-chicken"], ["cake", "dessert"],
-    ["pastry", "dessert"], ["cheesecake", "dessert"],
-    ["kulfi", "dessert"], ["gulab jamun", "dessert"],
-    ["jalebi", "dessert"], ["rasmalai", "dessert"],
-    ["kheer", "dessert"], ["pudding", "dessert"],
-    ["waffle", "dessert"], ["muffin", "dessert"],
-    ["donut", "dessert"], ["cookie", "dessert"],
-];
-
-const FOODISH_COUNTS = { biryani:81, burger:87, "butter-chicken":22, dessert:36, dosa:83, idly:77, pasta:34, pizza:95, rice:35, samosa:22 };
-
-function getDishImageUrl(dish) {
-    const name = dish.name.toLowerCase();
-    const cat = dish.category;
-
-    for (const [keyword, url] of Object.entries(IMG_URLS)) {
-        if (name.includes(keyword)) return url;
-    }
-
-    for (const [keyword, fc] of FOODISH_MAP) {
-        if (name.includes(keyword)) {
-            const count = FOODISH_COUNTS[fc] || 10;
-            let h = 0;
-            for (let i = 0; i < name.length; i++) { h = ((h << 5) - h) + name.charCodeAt(i); h |= 0; }
-            const idx = Math.abs(h) % count + 1;
-            return `https://foodish-api.com/images/${fc}/${fc}${idx}.jpg`;
-        }
-    }
-
-    const catUrl = {
-        "Juices": "https://upload.wikimedia.org/wikipedia/commons/6/67/Orange_juice_1_edit1.jpg",
-        "Coolers": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Tumbler_of_cola_with_ice.jpg",
-        "Shakes": "https://images.pexels.com/photos/4753639/pexels-photo-4753639.jpeg",
-        "Beverages": "https://images.pexels.com/photos/1417945/pexels-photo-1417945.jpeg",
-        "Healthy Diet": "https://upload.wikimedia.org/wikipedia/commons/7/71/Healthy_Lentil_Salad_%28Unsplash%29.jpg",
-        "Breakfast": "https://images.pexels.com/photos/904089/pexels-photo-904089.jpeg",
-        "Snacks & Starters": "https://images.pexels.com/photos/4109272/pexels-photo-4109272.jpeg",
-        "Noodles": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Hostel_Maggi.jpg",
-        "Maggie": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Hostel_Maggi.jpg",
-    }[cat];
-
-    return catUrl || null;
-}
-
 function DishImage({ dish, style }) {
-    const fallback = useMemo(() => dishImg(dish.initial, dish.color, dish.category), [dish.initial, dish.color, dish.category]);
-    const [src, setSrc] = useState(() => getDishImageUrl(dish) || fallback);
-    return <img src={src} alt={dish.name} style={style} loading="lazy" onError={() => setSrc(fallback)} />;
+    const src = useMemo(() => dishImg(dish.initial || dish.name?.[0] || "?", dish.color, dish.category), [dish]);
+    return <img src={src} alt={dish.name} style={style} loading="lazy" />;
 }
 
 const STORE = { lat: 30.3429, lon: 77.9860, name: "Healthy Arena's Cafe", maxKm: 10 };
