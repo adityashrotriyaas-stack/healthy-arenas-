@@ -396,14 +396,63 @@ function TiffinServiceCard() {
     );
 }
 
-function CartDrawer() {
-    const { items, remove, add, count, total, drawerOpen, setDrawerOpen } = useCart();
+function AddressAutocomplete({ value, onChange, placeholder }) {
+    const [suggestions, setSuggestions] = useState([]);
+    const timer = useRef(null);
+    const abort = useRef(null);
+
+    const search = (q) => {
+        clearTimeout(timer.current);
+        abort.current?.abort();
+        if (q.trim().length < 3) { setSuggestions([]); return; }
+        timer.current = setTimeout(async () => {
+            try {
+                const ctrl = new AbortController();
+                abort.current = ctrl;
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`,
+                    { signal: ctrl.signal, headers: { "Accept-Language": "en" } }
+                );
+                const data = await res.json();
+                if (Array.isArray(data)) setSuggestions(data.slice(0, 5).map(d => ({ label: d.display_name, lat: d.lat, lon: d.lon })));
+            } catch (e) { /* network failure -> fall back to manual typing */ }
+        }, 300);
+    };
+
+    return (
+        <div style={{ position: "relative" }}>
+            <div className="input-focus" style={{ display: "flex", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 12px", color: C.orange }}><Icon name="pin" size={14} /></span>
+                <input
+                    value={value}
+                    onChange={e => { onChange(e.target.value); search(e.target.value); }}
+                    placeholder={placeholder}
+                    style={{ flex: 1, background: "none", border: "none", outline: "none", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream, padding: "12px 12px", minWidth: 0 }}
+                />
+            </div>
+            {suggestions.length > 0 && (
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 20, background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 12, marginTop: 6, maxHeight: 240, overflow: "auto", boxShadow: "0 8px 40px rgba(0,0,0,0.5)" }}>
+                    {suggestions.map((s, i) => (
+                        <button key={i} type="button" onClick={() => { onChange(s.label); setSuggestions([]); }}
+                            style={{ width: "100%", background: "none", border: "none", borderBottom: i < suggestions.length - 1 ? `1px solid ${C.border}` : "none", padding: "10px 14px", fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.cream, textAlign: "left", cursor: "pointer" }}>
+                            {s.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function CheckoutView() {
+    const { items, add, remove, count, total, drawerOpen, setDrawerOpen } = useCart();
     const { toast } = useToast();
     const [checkingOut, setCheckingOut] = useState(false);
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
     const [loc, setLoc] = useState(null);
     const [gettingLoc, setGettingLoc] = useState(false);
+    const [mode, setMode] = useState("delivery");
     const vals = Object.values(items);
 
     const useMyLocation = async () => {
@@ -412,122 +461,125 @@ function CartDrawer() {
             const pos = await checkLocation();
             if (!pos) { toast("Couldn't fetch location — please type your address", "info"); return; }
             setLoc(pos);
+            setAddress(`${pos.source === "ip" ? "≈ " : "✓ "}Location captured (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)})`);
             toast(pos.source === "ip" ? "Approximate location captured (IP-based)" : "Current location captured", "success");
         } finally { setGettingLoc(false); }
     };
 
-    const placeOrder = async (payment) => {
-        if (!address) { toast("Enter your delivery address", "info"); return; }
+    const placeOrder = async () => {
+        if (mode === "delivery" && !address) { toast("Enter your delivery address", "info"); return; }
         if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
-        const fullAddress = loc
-            ? `${address}\n📍 https://maps.google.com/?q=${loc.lat},${loc.lon}`
-            : address;
+        const fullAddress = mode === "delivery"
+            ? (loc ? `${address}\n📍 https://maps.google.com/?q=${loc.lat},${loc.lon}` : address)
+            : `Pickup — ${STORE.name}`;
         setCheckingOut(true);
         try {
-            await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment });
-            toast(payment ? "Payment successful! Order placed." : "Order placed! Pay on delivery.", "success");
+            await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment: null });
+            toast(mode === "delivery" ? "Order placed! Pay on delivery." : "Pickup order placed! Pay at counter.", "success");
             setDrawerOpen(false);
-        } catch (e) { toast(payment ? "Payment failed" : "Order failed", "info"); setCheckingOut(false); }
+        } catch (e) { toast("Order failed", "info"); setCheckingOut(false); }
     };
 
-    const handleCheckout = () => placeOrder(null);
+    if (!drawerOpen) return null;
+
     return (
-        <>
-            {drawerOpen && <div onClick={() => setDrawerOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.5)" }} />}
-            <div style={{
-                position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 401,
-                width: Math.min(380, window.innerWidth - 20), background: C.bgCard,
-                borderLeft: `1px solid ${C.border}`,
-                transform: drawerOpen ? "translateX(0)" : "translateX(100%)",
-                transition: "transform 0.35s",
-                display: "flex", flexDirection: "column",
-            }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
-                    <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.cream }}>Your Cart ({count})</span>
-                    <button type="button" onClick={() => setDrawerOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.creamDim, display: "flex", alignItems: "center", justifyContent: "center", padding: 4 }}><Icon name="close" /></button>
+        <div style={{ position: "fixed", inset: 0, zIndex: 450, background: C.bg, overflowY: "auto" }}>
+            <div style={{ maxWidth: 1160, margin: "0 auto", padding: "24px 5vw 80px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0 20px" }}>
+                    <button type="button" onClick={() => setDrawerOpen(false)}
+                        style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 600, color: C.orange }}>
+                        <Icon name="chevronDown" size={16} style={{ transform: "rotate(90deg)" }} /> Back to menu
+                    </button>
+                    <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.cream }}>Checkout · {count} items</span>
                 </div>
 
-                <div style={{ flex: 1, overflow: "auto", padding: "16px 24px" }}>
-                    {vals.length === 0 ? (
-                        <div style={{ textAlign: "center", marginTop: 60, color: C.creamDim }}>
-                            <div style={{
-                                width: 48, height: 48, borderRadius: "50%", margin: "0 auto 16px",
-                                background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                opacity: 0.6,
-                            }}><Icon name="cart" size={20} style={{ color: C.creamDim }} /></div>
-                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.creamDim }}>Your cart is empty</div>
-                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: "rgba(200,184,154,0.4)", marginTop: 6 }}>Add some dishes to get started</div>
-                        </div>
-                    ) : vals.map(({ name, price, qty }) => (
-                        <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${C.border}` }}>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{name}</div>
-                                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{price}</div>
+                {vals.length === 0 ? (
+                    <div style={{ textAlign: "center", marginTop: 80, color: C.creamDim }}>
+                        <div style={{
+                            width: 56, height: 56, borderRadius: "50%", margin: "0 auto 16px",
+                            background: "rgba(255,255,255,0.05)", border: `1px solid ${C.border}`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                        }}><Icon name="cart" size={22} style={{ color: C.creamDim }} /></div>
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 14 }}>Your cart is empty</div>
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: "rgba(200,184,154,0.4)", marginTop: 6 }}>Add some dishes from the menu first</div>
+                    </div>
+                ) : (
+                    <div className="checkout-grid">
+                        <div className="checkout-details">
+                            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                                {[["delivery", "Delivery", "scooter"], ["pickup", "Pickup", "box"]].map(([k, lbl, ic]) => (
+                                    <button key={k} type="button" onClick={() => setMode(k)}
+                                        style={{ flex: 1, background: mode === k ? "rgba(255,94,20,0.12)" : C.bgCard, border: `1px solid ${mode === k ? C.borderO : C.border}`, borderRadius: 12, padding: "14px", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 700, color: mode === k ? C.orange : C.cream, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s" }}>
+                                        <Icon name={ic} size={14} /> {lbl}
+                                    </button>
+                                ))}
                             </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                <button type="button" onClick={() => remove(name)} style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: C.orange }}><Icon name="minus" /></button>
-                                <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream, minWidth: 20, textAlign: "center" }}>{qty}</span>
-                                <button type="button" onClick={() => add(name, price)} style={{ background: C.orange, border: "none", cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><Icon name="plus" /></button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
 
-                {vals.length > 0 && (
-                    <div style={{ padding: "16px 24px", borderTop: `1px solid ${C.border}` }}>
-                        <input
-                            value={address}
-                            onChange={e => setAddress(e.target.value)}
-                            placeholder="Delivery address *"
-                            style={{
-                                width: "100%", background: C.bg, border: `1px solid ${C.border}`,
-                                borderRadius: 10, padding: "12px 14px", fontFamily: "'Inter',sans-serif",
-                                fontSize: 13, color: C.cream, outline: "none", boxSizing: "border-box",
-                            }}
-                        />
-                        <button type="button" onClick={useMyLocation} disabled={gettingLoc}
-                            style={{
-                                width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                                background: "rgba(52,184,106,0.1)", border: `1px dashed ${loc ? "rgba(52,184,106,0.5)" : "rgba(52,184,106,0.3)"}`,
-                                cursor: "pointer", borderRadius: 10, padding: "10px", fontFamily: "'Inter',sans-serif",
-                                fontSize: 12, fontWeight: 600, color: C.green, transition: "all 0.2s",
-                            }}
-                            onMouseEnter={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.16)"; }}
-                            onMouseLeave={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.1)"; }}
-                        ><Icon name="pin" size={14} />{gettingLoc ? "Getting location..." : loc ? `${loc.source === "ip" ? "≈ " : "✓ "}Location attached (${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)})` : "Use Current Location"}</button>
-                        <div className="input-focus" style={{ display: "flex", marginTop: 10, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
-                            <span style={{ display: "flex", alignItems: "center", padding: "0 14px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, borderRight: `1px solid ${C.border}` }}>+91</span>
-                            <input
-                                type="tel" inputMode="numeric"
-                                value={phone.replace(/\D/g, "").slice(0, 10)}
-                                onChange={e => setPhone(e.target.value)}
-                                placeholder="Mobile number *"
-                                style={{
-                                    flex: 1, background: "none", border: "none", outline: "none",
-                                    fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream,
-                                    padding: "12px 14px", boxSizing: "border-box",
-                                }}
-                            />
+                            {mode === "delivery" && (
+                                <>
+                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.creamDim, marginBottom: 8 }}>Delivery address</div>
+                                    <AddressAutocomplete value={address} onChange={setAddress} placeholder="Search your address or area..." />
+                                    <button type="button" onClick={useMyLocation} disabled={gettingLoc}
+                                        style={{ width: "100%", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(52,184,106,0.1)", border: `1px dashed ${loc ? "rgba(52,184,106,0.5)" : "rgba(52,184,106,0.3)"}`, cursor: gettingLoc ? "default" : "pointer", borderRadius: 10, padding: "10px", fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: C.green }}>
+                                        <Icon name="pin" size={14} />
+                                        {gettingLoc ? "Getting location..." : loc ? "Location attached — tap to retry" : "Use Current Location"}
+                                    </button>
+                                </>
+                            )}
+
+                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.creamDim, margin: "18px 0 8px" }}>Contact</div>
+                            <div className="input-focus" style={{ display: "flex", marginTop: 8, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+                                <span style={{ display: "flex", alignItems: "center", padding: "0 14px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, borderRight: `1px solid ${C.border}` }}>+91</span>
+                                <input type="tel" inputMode="numeric"
+                                    value={phone.replace(/\D/g, "").slice(0, 10)}
+                                    onChange={e => setPhone(e.target.value)}
+                                    placeholder="Mobile number *"
+                                    style={{ flex: 1, background: "none", border: "none", outline: "none", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream, padding: "12px 14px", minWidth: 0 }}
+                                />
+                            </div>
+
+                            <div style={{ display: "flex", justifyContent: "space-between", margin: "18px 0 12px" }}>
+                                <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, color: C.cream }}>Total</span>
+                                <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 22, color: C.orange }}>₹{total.toLocaleString()}</span>
+                            </div>
+                            <button type="button" disabled={checkingOut} onClick={placeOrder}
+                                style={{ width: "100%", background: checkingOut ? "rgba(232,89,12,0.5)" : C.orange, border: "none", cursor: checkingOut ? "default" : "pointer", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, color: "#fff", padding: "14px", borderRadius: 12, transition: "all 0.2s" }}
+                            >{checkingOut ? "Placing order..." : `Place Order (${mode === "delivery" ? "COD" : "Pickup"}) · ₹${total.toLocaleString()}`}</button>
+                            <div style={{ textAlign: "center", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 10 }}>
+                                Online payments coming soon — COD only for now
+                            </div>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "14px 0" }}>
-                            <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, color: C.cream }}>Total</span>
-                            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 20, color: C.orange }}>₹{total.toLocaleString()}</span>
-                        </div>
-                        <button type="button" disabled={checkingOut} onClick={handleCheckout}
-                            style={{
-                                width: "100%", background: checkingOut ? "rgba(232,89,12,0.5)" : C.orange, border: "none", cursor: checkingOut ? "default" : "pointer",
-                                fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700,
-                                color: "#fff", padding: "14px", borderRadius: 12, marginTop: 8,
-                            }}
-                        >{checkingOut ? "Placing order..." : "Place Order (COD) · ₹" + total.toLocaleString()}</button>
-                        <div style={{ textAlign: "center", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 10 }}>
-                            Online payments coming soon — COD only for now
+
+                        <div>
+                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.creamDim, marginBottom: 8 }}>Your order</div>
+                            <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 16, padding: "8px 20px" }}>
+                                {vals.map(({ name, price, qty }) => (
+                                    <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${C.border}` }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{name}</div>
+                                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>₹{parseInt(price.replace(/[^0-9]/g, "")) * qty}</div>
+                                        </div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                            <button type="button" onClick={() => remove(name)} style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: C.orange }}><Icon name="minus" /></button>
+                                            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream, minWidth: 20, textAlign: "center" }}>{qty}</span>
+                                            <button type="button" onClick={() => add(name, price)} style={{ background: C.orange, border: "none", cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}><Icon name="plus" /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 0 6px" }}>
+                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Subtotal ({count} items)</span>
+                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>₹{total.toLocaleString()}</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
+                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Delivery</span>
+                                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.green }}>Free</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 }
 
@@ -573,29 +625,7 @@ function ScrollProgress() {
     );
 }
 
-function FloatingOrderBtn() {
-    const [show, setShow] = useState(false);
-    useEffect(() => {
-        const fn = () => setShow(window.scrollY > 600);
-        window.addEventListener("scroll", fn);
-        return () => window.removeEventListener("scroll", fn);
-    }, []);
-    return (
-        <button type="button" onClick={() => document.getElementById("order")?.scrollIntoView({ behavior: "smooth" })}
-            className="floating-order"
-            style={{
-                position: "fixed", bottom: 80, left: "50%", transform: show ? "translateX(-50%) translateY(0)" : "translateX(-50%) translateY(100px)",
-                zIndex: 150, background: C.orange, border: "none", cursor: "pointer",
-                fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 700,
-                color: "#fff", padding: "14px 32px", borderRadius: 50,
-                boxShadow: "0 8px 32px rgba(255,94,20,0.4)",
-                transition: "transform 0.35s, opacity 0.35s",
-                opacity: show ? 1 : 0, pointerEvents: show ? "auto" : "none",
-                display: "none",
-            }}
-        ><Icon name="scooter" size={20} style={{ marginRight: 8 }} /> Order Now</button>
-    );
-}
+
 
 function Nav({ onAdminOpen, onDashboardOpen }) {
     const [scrolled, setScrolled] = useState(false);
@@ -2063,7 +2093,6 @@ export default function App() {
             .grid-stats { grid-template-columns: 1fr; }
             .nav-links { display: none !important; }
             .hamburger { display: block !important; }
-            .floating-order { display: flex !important; }
             .hide-mobile { display: none !important; }
         }
         .dish-row { flex-wrap: wrap; }
@@ -2090,6 +2119,12 @@ export default function App() {
         @keyframes fade-up { 0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)} }
         @keyframes letter-in { 0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)} }
         .input-focus:focus-within { border-color: #FF5E14 !important; box-shadow: 0 0 0 3px rgba(255,94,20,0.15) !important; }
+        .checkout-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 32px; align-items: start; }
+        .checkout-details { position: sticky; top: 90px; }
+        @media (max-width: 900px) {
+            .checkout-grid { grid-template-columns: 1fr; }
+            .checkout-details { position: static; }
+        }
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
@@ -2109,10 +2144,9 @@ export default function App() {
                 <OrderCTA />
                 <Testimonials />
                 <Footer onSupport={() => setShowSupport(true)} />
-                <CartDrawer />
+                <CheckoutView />
                 <BackToTop />
                 <ScrollProgress />
-                <FloatingOrderBtn />
                 <BottomNav />
                 {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
                 {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} initialTab={showAdmin} /></Suspense>}
