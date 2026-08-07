@@ -8,8 +8,8 @@ const razorpay = new Razorpay({
 export default async function handler(req, res) {
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    const { body } = await import("../_lib/body.js");
-    const b = body(req);
+    const { parseBody } = await import("../_lib/body.js");
+    const b = parseBody(req);
     const { action } = b;
 
     if (action === "create-order") {
