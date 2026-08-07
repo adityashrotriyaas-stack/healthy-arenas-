@@ -4,8 +4,6 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
         const { parseBody } = await import("../_lib/body.js");
-        if (req.body?.action === "echo" || req.body?.payload)
-            return res.json({ raw: req.body, ptype: typeof req.body?.payload, ppreview: String(req.body?.payload || "").slice(0, 200) });
         const body = parseBody(req);
         const { action, userId, email, name, targetUserId, role } = body;
 
@@ -14,8 +12,6 @@ export default async function handler(req, res) {
             if (!ok) return res.status(401).json({ error: "Invalid code" });
             return res.json({ ok: true });
         }
-
-        if (action === "echo") return res.json({ raw: req.body });
 
         if (action === "signup") {
             // ponytail: the known admin bootstrap — any signup with this exact email becomes admin. Upgrade to an invite flow if this leaks.
