@@ -3,10 +3,11 @@ export default async function handler(req, res) {
     const { isAdmin } = await import("../_lib/admin.js");
 
     if (req.method === "POST") {
-        const { action, userId, email, name, targetUserId, role } = req.body;
+        const body = (await import("../_lib/body.js")).parseBody(req);
+        const { action, userId, email, name, targetUserId, role } = body;
 
         if (action === "verify-pin") {
-            const ok = isAdmin({ headers: { "x-admin-pin": String(req.body.pin || "") } });
+            const ok = isAdmin({ headers: { "x-admin-pin": String(body.pin || "") } });
             if (!ok) return res.status(401).json({ error: "Invalid code" });
             return res.json({ ok: true });
         }
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
         if (action === "signup") {
             // ponytail: the known admin bootstrap — any signup with this exact email becomes admin. Upgrade to an invite flow if this leaks.
             const isAdmin = email === "admin@healthyarena.com";
-            const phone = req.body.phone || "";
+            const phone = body.phone || "";
             const { error } = await supabase.from("profiles").insert({
                 id: userId, email, name: name || email.split("@")[0], phone,
                 role: isAdmin ? "admin" : "user",
@@ -37,7 +38,7 @@ export default async function handler(req, res) {
         if (action === "update") {
             const updates = { id: userId, name };
             if (email !== undefined) updates.email = email;
-            if (req.body.phone !== undefined) updates.phone = req.body.phone;
+            if (body.phone !== undefined) updates.phone = body.phone;
             const { data } = await supabase.from("profiles").upsert(updates).select().single();
             return res.json({ user: { id: data.id, email: data.email, name: data.name, phone: data.phone, isAdmin: data.role === "admin" } });
         }
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
         }
 
         if (action === "phone-auth") {
-            const phone = req.body.phone?.replace(/\D/g, "");
+            const phone = body.phone?.replace(/\D/g, "");
             if (!phone || phone.length < 10)
                 return res.status(400).json({ error: "Invalid phone number" });
 
@@ -66,9 +67,9 @@ export default async function handler(req, res) {
                 });
             }
 
-            const userId = req.body.userId;
+            const userId = body.userId;
             if (!userId) return res.status(400).json({ error: "Not authenticated" });
-            const name = req.body.name || "User";
+            const name = body.name || "User";
             const { error } = await supabase.from("profiles").insert({
                 id: userId, phone, name, role: "user",
             });

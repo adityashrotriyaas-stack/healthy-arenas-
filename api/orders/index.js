@@ -13,7 +13,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-        const { user_id, items, total, address, phone, payment } = req.body;
+        const { body } = await import("../_lib/body.js");
+        const b = body(req);
+        const { user_id, items, total, address, phone, payment } = b;
         if (!items || !total) return res.status(400).json({ error: "Missing required fields" });
         if (!phone || String(phone).replace(/\D/g, "").length < 10)
             return res.status(400).json({ error: "Enter a valid 10-digit mobile number" });
@@ -41,7 +43,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "PUT") {
-        const { id, status } = req.body;
+        const { body } = await import("../_lib/body.js");
+        const { id, status } = body(req);
         if (!id || !status) return res.status(400).json({ error: "Missing id or status" });
         if (!isAdmin(req)) return res.status(403).json({ error: "Admin only" });
         const { data, error } = await supabase.from("orders").update({ status }).eq("id", id).select().single();

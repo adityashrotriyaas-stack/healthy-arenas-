@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from "rea
 import { C } from "./colors";
 import { Icon } from "./icons";
 import { DISHES } from "../data/dishes";
-import { dishesApi } from "../api/client";
+import { dishesApi, authApi } from "../api/client";
 
 const CartContext = createContext();
 function CartProvider({ children }) {
@@ -75,16 +75,7 @@ function AuthProvider({ children }) {
     const [admin, setAdmin] = useState(() => !!localStorage.getItem("ha_pin"));
 
     const unlock = useCallback(async (pin) => {
-        const res = await fetch("/api/auth", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "verify-pin", pin }),
-        });
-        const text = await res.text();
-        if (!text) throw new Error("Server error — try again");
-        let data;
-        try { data = JSON.parse(text); } catch (e) { throw new Error("Unexpected server response — try again"); }
-        if (!res.ok) throw new Error(data.error || "Invalid code");
+        await authApi.verifyPin(pin);
         localStorage.setItem("ha_pin", pin);
         setAdmin(true);
     }, []);

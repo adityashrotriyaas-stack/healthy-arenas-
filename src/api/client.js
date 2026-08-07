@@ -1,10 +1,17 @@
 const BASE = ""; // Same origin (Vercel handles routing)
 
 async function request(url, options = {}) {
-    const headers = { "Content-Type": "application/json", ...options.headers };
+    const headers = { ...options.headers };
     const pin = localStorage.getItem("ha_pin");
     if (pin) headers["X-Admin-Pin"] = pin;
-    const res = await fetch(BASE + url, { ...options, headers });
+    let body = options.body;
+    if (body && !(headers["Content-Type"] && headers["Content-Type"] !== "application/json")) {
+        // ponytail: Vercel edge returns empty 400 for some POST JSON clients.
+        // Send JSON as urlencoded `payload`; servers parse both.
+        headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+        body = "payload=" + encodeURIComponent(body);
+    }
+    const res = await fetch(BASE + url, { ...options, body, headers });
     const text = await res.text();
     if (!text) throw new Error(res.ok ? "Empty response from server" : "Server error — try again");
     let data;

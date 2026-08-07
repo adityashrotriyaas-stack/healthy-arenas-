@@ -8,16 +8,18 @@ const razorpay = new Razorpay({
 export default async function handler(req, res) {
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    const { action } = req.body;
+    const { body } = await import("../_lib/body.js");
+    const b = body(req);
+    const { action } = b;
 
     if (action === "create-order") {
-        const amount = Number(req.body.amount);
+        const amount = Number(b.amount);
         if (!Number.isFinite(amount) || amount < 1)
             return res.status(400).json({ error: "Invalid amount (min ₹1)" });
         try {
             const order = await razorpay.orders.create({
                 amount: Math.round(amount * 100), // paise
-                currency: req.body.currency || "INR",
+                currency: b.currency || "INR",
                 receipt: "order_" + Date.now(),
             });
             return res.json({
@@ -32,7 +34,7 @@ export default async function handler(req, res) {
     }
 
     if (action === "verify") {
-        const { order_id, payment_id, razorpay_signature } = req.body;
+        const { order_id, payment_id, razorpay_signature } = b;
         if (!order_id || !payment_id || !razorpay_signature)
             return res.status(400).json({ error: "Missing payment details" });
         try {
