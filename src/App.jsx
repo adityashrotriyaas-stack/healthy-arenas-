@@ -222,23 +222,12 @@ function HeroShot({ src, style }) {
 const STORE = { lat: 30.3429, lon: 77.9860, name: "Healthy Arena's Cafe", maxKm: 10 };
 
 async function checkLocation() {
-    const ipFallback = async () => {
-        try {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), 6000);
-            const res = await fetch("https://ipwho.is/", { signal: ctrl.signal });
-            clearTimeout(t);
-            const j = await res.json();
-            if (j.success && j.latitude && j.longitude) return { lat: j.latitude, lon: j.longitude, source: "ip" };
-        } catch (e) {}
-        return null;
-    };
     return new Promise((resolve) => {
-        if (!navigator.geolocation) return resolve(ipFallback());
+        if (!navigator.geolocation) return resolve(null);
         navigator.geolocation.getCurrentPosition(
             (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, source: "gps" }),
-            () => resolve(ipFallback()),
-            { timeout: 10000, enableHighAccuracy: false, maximumAge: 0 }
+            () => resolve(null),
+            { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 }
         );
     });
 }
@@ -459,10 +448,10 @@ function CheckoutView() {
         setGettingLoc(true);
         try {
             const pos = await checkLocation();
-            if (!pos) { toast("Couldn't fetch location — please type your address", "info"); return; }
+            if (!pos) { toast("Location unavailable — please type your address", "info"); return; }
             setLoc(pos);
-            setAddress(`${pos.source === "ip" ? "≈ " : "✓ "}Location captured (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)})`);
-            toast(pos.source === "ip" ? "Approximate location captured (IP-based)" : "Current location captured", "success");
+            setAddress(`✓ Location captured (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)})`);
+            toast("Current location captured", "success");
         } finally { setGettingLoc(false); }
     };
 
