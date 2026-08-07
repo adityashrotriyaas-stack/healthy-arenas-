@@ -12,6 +12,8 @@ export default async function handler(req, res) {
             return res.json({ ok: true });
         }
 
+        if (action === "echo") return res.json({ raw: req.body });
+
         if (action === "signup") {
             // ponytail: the known admin bootstrap — any signup with this exact email becomes admin. Upgrade to an invite flow if this leaks.
             const isAdmin = email === "admin@healthyarena.com";
