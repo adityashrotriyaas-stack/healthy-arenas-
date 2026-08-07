@@ -4,10 +4,7 @@ export default async function handler(req, res) {
 
     if (req.method === "GET") {
         const { userId, all } = req.query;
-        if (all) {
-            const requesterId = req.headers["x-user-id"];
-            if (!(await isAdmin(requesterId))) return res.status(403).json({ error: "Admin only" });
-        }
+        if (all && !isAdmin(req)) return res.status(403).json({ error: "Admin only" });
         let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
         if (!all && userId) query = query.eq("user_id", userId);
         const { data, error } = await query;
@@ -18,6 +15,8 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
         const { user_id, items, total, address, phone, payment } = req.body;
         if (!items || !total) return res.status(400).json({ error: "Missing required fields" });
+        if (!phone || String(phone).replace(/\D/g, "").length < 10)
+            return res.status(400).json({ error: "Enter a valid 10-digit mobile number" });
 
         let payment_status = "pending";
         let payment_id = null;
@@ -44,8 +43,7 @@ export default async function handler(req, res) {
     if (req.method === "PUT") {
         const { id, status } = req.body;
         if (!id || !status) return res.status(400).json({ error: "Missing id or status" });
-        const userId = req.headers["x-user-id"];
-        if (!(await isAdmin(userId))) return res.status(403).json({ error: "Admin only" });
+        if (!isAdmin(req)) return res.status(403).json({ error: "Admin only" });
         const { data, error } = await supabase.from("orders").update({ status }).eq("id", id).select().single();
         if (error) return res.status(500).json({ error: error.message });
         return res.json({ order: data });

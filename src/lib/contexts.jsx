@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from "rea
 import { C } from "./colors";
 import { Icon } from "./icons";
 import { DISHES } from "../data/dishes";
-import { supabase } from "./supabase";
-import { authApi, dishesApi } from "../api/client";
+import { dishesApi } from "../api/client";
 
 const CartContext = createContext();
 function CartProvider({ children }) {
@@ -73,74 +72,27 @@ function useDishes() { return useContext(DishesContext); }
 
 const AuthContext = createContext();
 function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [admin, setAdmin] = useState(() => !!localStorage.getItem("ha_pin"));
 
-    async function fetchProfile(userId) {
-        try {
-            const res = await fetch("/api/auth", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "get", userId }),
-            });
-            const data = await res.json();
-            if (data.user?.name) {
-                const u = {
-                    id: data.user.id,
-                    name: data.user.name,
-                    phone: data.user.phone,
-                    avatar: data.user.name[0].toUpperCase(),
-                    isAdmin: data.user.isAdmin,
-                };
-                setUser(u);
-                return;
-            }
-        } catch (e) {}
-
-        const { data: { user: sbUser } } = await supabase.auth.getUser();
-        if (sbUser) {
-            setUser({
-                id: sbUser.id,
-                name: sbUser.user_metadata?.name || "User",
-                phone: sbUser.phone || "",
-                avatar: (sbUser.user_metadata?.name || sbUser.phone?.[0] || "U").toUpperCase(),
-                isAdmin: false,
-            });
-        }
-        setLoading(false);
-    }
-
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                fetchProfile(session.user.id);
-            } else {
-                setLoading(false);
-            }
+    const unlock = useCallback(async (pin) => {
+        const res = await fetch("/api/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "verify-pin", pin }),
         });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                fetchProfile(session.user.id);
-            } else {
-                setUser(null);
-                setLoading(false);
-            }
-        });
-        return () => subscription.unsubscribe();
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Invalid code");
+        localStorage.setItem("ha_pin", pin);
+        setAdmin(true);
     }, []);
 
-    const refreshUser = useCallback(async () => {
-        const { data: { user: sbUser } } = await supabase.auth.getUser();
-        if (sbUser) await fetchProfile(sbUser.id);
+    const lock = useCallback(() => {
+        localStorage.removeItem("ha_pin");
+        setAdmin(false);
     }, []);
 
-    const logout = useCallback(async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-    }, []);
-
-    return <AuthContext.Provider value={{ user, refreshUser, logout, loading }}>{children}</AuthContext.Provider>;
+    const user = admin ? { id: "admin", name: "Admin", phone: "", avatar: "A", isAdmin: true } : null;
+    return <AuthContext.Provider value={{ user, unlock, logout: lock, loading: false }}>{children}</AuthContext.Provider>;
 }
 function useAuth() { return useContext(AuthContext); }
 

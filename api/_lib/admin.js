@@ -1,7 +1,8 @@
-import { supabase } from "./supabase.js";
+import crypto from "crypto";
 
-export async function isAdmin(userId) {
-    if (!userId) return false;
-    const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
-    return data?.role === "admin";
+export function isAdmin(req) {
+    const pin = (req.headers["x-admin-pin"] || "").trim();
+    const expected = process.env.ADMIN_PIN;
+    if (!expected || !pin || expected.length !== pin.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(pin), Buffer.from(expected));
 }

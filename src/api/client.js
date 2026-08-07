@@ -1,11 +1,9 @@
 const BASE = ""; // Same origin (Vercel handles routing)
 
-import { supabase } from "../lib/supabase";
-
 async function request(url, options = {}) {
     const headers = { "Content-Type": "application/json", ...options.headers };
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.id) headers["X-User-Id"] = session.user.id;
+    const pin = localStorage.getItem("ha_pin");
+    if (pin) headers["X-Admin-Pin"] = pin;
     const res = await fetch(BASE + url, { ...options, headers });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Request failed");
@@ -13,12 +11,10 @@ async function request(url, options = {}) {
 }
 
 export const authApi = {
-    phoneAuth: (userId, phone, name) =>
-        request("/api/auth", { method: "POST", body: JSON.stringify({ action: "phone-auth", userId, phone, name }) }),
+    verifyPin: (pin) =>
+        request("/api/auth", { method: "POST", body: JSON.stringify({ action: "verify-pin", pin }) }),
     getProfile: (userId) =>
         request("/api/auth", { method: "POST", body: JSON.stringify({ action: "get", userId }) }),
-    updateProfile: (userId, name, phone) =>
-        request("/api/auth", { method: "POST", body: JSON.stringify({ action: "update", userId, name, phone }) }),
 };
 
 export const dishesApi = {

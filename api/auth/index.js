@@ -5,6 +5,12 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
         const { action, userId, email, name, targetUserId, role } = req.body;
 
+        if (action === "verify-pin") {
+            const ok = isAdmin({ headers: { "x-admin-pin": String(req.body.pin || "") } });
+            if (!ok) return res.status(401).json({ error: "Invalid code" });
+            return res.json({ ok: true });
+        }
+
         if (action === "signup") {
             // ponytail: the known admin bootstrap — any signup with this exact email becomes admin. Upgrade to an invite flow if this leaks.
             const isAdmin = email === "admin@healthyarena.com";
@@ -37,8 +43,7 @@ export default async function handler(req, res) {
         }
 
         if (action === "list") {
-            const requesterId = req.headers["x-user-id"];
-            if (!(await isAdmin(requesterId))) return res.status(403).json({ error: "Admin only" });
+            if (!isAdmin(req)) return res.status(403).json({ error: "Admin only" });
             const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
             if (error) return res.status(500).json({ error: error.message });
             return res.json({ users: data });
@@ -74,8 +79,7 @@ export default async function handler(req, res) {
         }
 
         if (action === "updateRole") {
-            const requesterId = req.headers["x-user-id"];
-            if (!(await isAdmin(requesterId))) return res.status(403).json({ error: "Admin only" });
+            if (!isAdmin(req)) return res.status(403).json({ error: "Admin only" });
             const { data, error } = await supabase.from("profiles").update({ role }).eq("id", targetUserId).select().single();
             if (error) return res.status(500).json({ error: error.message });
             return res.json({ user: data });

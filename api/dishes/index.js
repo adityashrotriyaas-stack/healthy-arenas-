@@ -8,8 +8,8 @@ export default async function handler(req, res) {
         return res.json({ dishes: data });
     }
 
-    const userId = req.headers["x-user-id"];
-    if (!(await isAdmin(userId))) return res.status(403).json({ error: "Admin only" });
+    const adminOk = isAdmin(req);
+    if (!adminOk) return res.status(403).json({ error: "Admin only" });
 
     if (req.method === "POST") {
         const { name, price, category, rating, time, tag, veg, image_url } = req.body;

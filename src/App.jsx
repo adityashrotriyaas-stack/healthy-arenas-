@@ -5,9 +5,75 @@ import { DISHES, FEATURED_TAGS } from "./data/dishes";
 import { dishesApi, ordersApi, openRazorpay } from "./api/client";
 import { Icon } from "./lib/icons";
 
-const LoginPage = lazy(() => import("./components/LoginPage").then(m => ({ default: m.LoginPage })));
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
 const AdminDashboard = lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+
+function AdminPinModal({ onClose }) {
+    const { unlock } = useAuth();
+    const { toast } = useToast();
+    const [pin, setPin] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const submit = async (e) => {
+        e.preventDefault();
+        if (pin.replace(/\D/g, "").length < 4) { toast("Enter the 4-digit admin code", "info"); return; }
+        setLoading(true);
+        setError("");
+        try {
+            await unlock(pin.replace(/\D/g, ""));
+            toast("Welcome, Admin!", "success");
+            onClose();
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ position: "fixed", inset: 0, zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", padding: 12 }}>
+            <div style={{
+                background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 24,
+                width: "min(100%, 380px)", padding: "clamp(28px, 6vw, 40px) clamp(20px, 6vw, 36px)",
+                position: "relative", boxSizing: "border-box",
+            }}>
+                <button type="button" onClick={onClose} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", cursor: "pointer", color: C.creamDim, display: "flex", alignItems: "center", justifyContent: "center", padding: 8 }}><Icon name="close" /></button>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: C.orange, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff" }}>HA</div>
+                    <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 16, color: C.cream }}>Admin access</span>
+                </div>
+                <form onSubmit={submit}>
+                    <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, marginBottom: 24 }}>Enter the admin code to open the dashboard.</p>
+                    {error && (
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.red, marginBottom: 16, padding: "8px 12px", background: "rgba(221,51,51,0.1)", borderRadius: 8, border: "1px solid rgba(221,51,51,0.2)" }}>{error}</div>
+                    )}
+                    <input
+                        type="tel" inputMode="numeric" autoFocus maxLength={6}
+                        value={pin.replace(/\D/g, "")}
+                        onChange={e => setPin(e.target.value)}
+                        placeholder="••••"
+                        style={{
+                            width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10,
+                            padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 16, color: C.cream,
+                            outline: "none", boxSizing: "border-box", letterSpacing: 10, textAlign: "center", fontWeight: 700,
+                        }}
+                    />
+                    <button type="submit" disabled={loading}
+                        style={{
+                            width: "100%", background: loading ? "rgba(232,89,12,0.5)" : C.orange,
+                            border: "none", cursor: loading ? "default" : "pointer",
+                            fontFamily: "'Inter',sans-serif", fontSize: 16, fontWeight: 700,
+                            color: "#fff", padding: "14px", borderRadius: 12, marginTop: 20, minHeight: 48,
+                        }}
+                    >{loading ? "Checking..." : "Open Dashboard"}</button>
+                </form>
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}`, fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, textAlign: "center" }}>
+                    For cafe staff only.
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function SupportModal({ onClose }) {
     const [sent, setSent] = useState(false);
@@ -402,18 +468,18 @@ function TiffinServiceCard() {
 
 function CartDrawer() {
     const { items, remove, add, count, total, drawerOpen, setDrawerOpen } = useCart();
-    const { user, session } = useAuth();
     const { toast } = useToast();
     const [checkingOut, setCheckingOut] = useState(false);
     const [address, setAddress] = useState("");
+    const [phone, setPhone] = useState("");
     const vals = Object.values(items);
 
     const placeOrder = async (payment) => {
-        if (!user) { toast("Sign in to place an order", "info"); setDrawerOpen(false); setTimeout(() => window.__openLogin?.(), 400); return; }
         if (!address) { toast("Enter your delivery address", "info"); return; }
+        if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
         setCheckingOut(true);
         try {
-            await ordersApi.create({ user_id: user.id, items: vals, total, address, phone: user.phone || "", payment });
+            await ordersApi.create({ items: vals, total, address, phone, payment });
             toast(payment ? "Payment successful! Order placed." : "Order placed! Pay on delivery.", "success");
             setDrawerOpen(false);
         } catch (e) { toast(payment ? "Payment failed" : "Order failed", "info"); setCheckingOut(false); }
@@ -421,12 +487,12 @@ function CartDrawer() {
 
     const handleCheckout = () => placeOrder(null);
     const handlePayOnline = () => {
-        if (!user) { toast("Sign in to place an order", "info"); setDrawerOpen(false); setTimeout(() => window.__openLogin?.(), 400); return; }
         if (!address) { toast("Enter your delivery address", "info"); return; }
+        if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
         setCheckingOut(true);
         openRazorpay({
             amount: total,
-            name: user?.name, phone: user?.phone,
+            phone,
             onSuccess: (r) => placeOrder({ order_id: r.razorpay_order_id, payment_id: r.razorpay_payment_id, razorpay_signature: r.razorpay_signature }),
             onDismiss: () => setCheckingOut(false),
         }).catch(() => setCheckingOut(false));
@@ -486,6 +552,20 @@ function CartDrawer() {
                                 fontSize: 13, color: C.cream, outline: "none", boxSizing: "border-box",
                             }}
                         />
+                        <div className="input-focus" style={{ display: "flex", marginTop: 10, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+                            <span style={{ display: "flex", alignItems: "center", padding: "0 14px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, borderRight: `1px solid ${C.border}` }}>+91</span>
+                            <input
+                                type="tel" inputMode="numeric"
+                                value={phone.replace(/\D/g, "").slice(0, 10)}
+                                onChange={e => setPhone(e.target.value)}
+                                placeholder="Mobile number *"
+                                style={{
+                                    flex: 1, background: "none", border: "none", outline: "none",
+                                    fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream,
+                                    padding: "12px 14px", boxSizing: "border-box",
+                                }}
+                            />
+                        </div>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "14px 0" }}>
                             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, color: C.cream }}>Total</span>
                             <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 20, color: C.orange }}>₹{total.toLocaleString()}</span>
@@ -581,7 +661,6 @@ function FloatingOrderBtn() {
 function Nav({ onAdminOpen, onDashboardOpen }) {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [showLogin, setShowLogin] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const { count, setDrawerOpen } = useCart();
     const { user, logout } = useAuth();
@@ -608,7 +687,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
     }, []);
 
     const scroll = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
-    useEffect(() => { window.__openLogin = () => setShowLogin(true); window.__toggleDropdown = () => setShowDropdown(o => !o); return () => { window.__openLogin = undefined; window.__toggleDropdown = undefined; }; }, []);
+    useEffect(() => { window.__toggleDropdown = () => setShowDropdown(o => !o); return () => { window.__toggleDropdown = undefined; }; }, []);
 
     const links = [
         ["Menu", "menu"], ["How it works", "how"],
@@ -750,7 +829,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                         )}
                     </div>
                 ) : (
-                    <button type="button" className="hide-mobile" onClick={() => setShowLogin(true)}
+                    <button type="button" className="hide-mobile" onClick={() => window.__openPin?.()}
                         style={{
                             background: "transparent", border: `1.5px solid ${C.borderO}`,
                             cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600,
@@ -759,7 +838,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,94,20,0.1)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-                    >Sign In</button>
+                    >Admin</button>
                 )}
 
                 <a href="tel:9634038986" className="nav-links" style={{
@@ -836,7 +915,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                         color: C.red, textAlign: "left",
                     }}>Sign out</button>
                 ) : (
-                    <button type="button" onClick={() => { setShowLogin(true); setMenuOpen(false); }} style={{
+                    <button type="button" onClick={() => { window.__openPin?.(); setMenuOpen(false); }} style={{
                         background: C.orange, border: "none",
                         cursor: "pointer", borderRadius: 8, padding: "12px 20px",
                         opacity: menuOpen ? 1 : 0,
@@ -844,11 +923,9 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                         transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
                         fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
                         color: "#fff", textAlign: "center",
-                    }}>Sign In</button>
+                    }}>Admin</button>
                 )}
             </div>
-
-            {showLogin && <Suspense fallback={null}><LoginPage onClose={() => setShowLogin(false)} /></Suspense>}
         </nav>
     );
 }
@@ -1692,7 +1769,6 @@ function Features() {
 function OrderCTA() {
     const [ref, inView] = useInView(0.2);
     const { total: cartTotal } = useCart();
-    const { user } = useAuth();
     const [address, setAddress] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [locMsg, setLocMsg] = useState(null);
@@ -1743,7 +1819,6 @@ function OrderCTA() {
                 try {
                     await openRazorpay({
                         amount: cartTotal,
-                        name: user?.name, phone: user?.phone,
                         onSuccess: () => {
                             setLocMsg(`You're ${Math.round(dist)} km away — order confirmed for ${slot}! (${payLabel})`);
                             setLocType("success");
@@ -2034,7 +2109,6 @@ function BottomNav() {
     const { user, logout } = useAuth();
     const [active, setActive] = useState("home");
     const [showProfile, setShowProfile] = useState(false);
-    const [showLogin, setShowLogin] = useState(false);
     const scroll = (id) => {
         if (id === "hero") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -2114,11 +2188,11 @@ function BottomNav() {
                             <>
                                 <div style={{ textAlign: "center", marginBottom: 20 }}>
                                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.cream, marginBottom: 4 }}>Account</div>
-                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Sign in to place orders and save favorites</div>
+                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Order without an account — just add your phone at checkout.</div>
                                 </div>
-                                <button type="button" onClick={() => { window.__openLogin?.(); setShowProfile(false); }}
-                                    style={{ width: "100%", background: C.orange, border: "none", cursor: "pointer", borderRadius: 10, padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 8 }}
-                                >Sign In</button>
+                                <button type="button" onClick={() => { window.__openPin?.(); setShowProfile(false); }}
+                                    style={{ width: "100%", background: "rgba(232,89,12,0.12)", border: `1px solid ${C.borderO}`, cursor: "pointer", borderRadius: 10, padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700, color: C.orange, marginBottom: 8 }}
+                                >Admin access</button>
                                 <button type="button" onClick={() => setShowProfile(false)}
                                     style={{ width: "100%", background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 10, padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.creamDim }}
                                 >Close</button>
@@ -2127,7 +2201,6 @@ function BottomNav() {
                     </div>
                 </>
             )}
-            {showLogin && <Suspense fallback={null}><LoginPage onClose={() => setShowLogin(false)} /></Suspense>}
         </>
     );
 }
@@ -2162,12 +2235,12 @@ export default function App() {
     const [showSupport, setShowSupport] = useState(false);
     const [showAdmin, setShowAdmin] = useState(false);
     const [showDashboard, setShowDashboard] = useState(false);
-    const [showLogin, setShowLogin] = useState(false);
+    const [showPin, setShowPin] = useState(false);
     useEffect(() => {
         window.__openDashboard = () => setShowDashboard(true);
         window.__openAdmin = () => setShowAdmin(true);
-        window.__openLogin = () => setShowLogin(true);
-        return () => { window.__openDashboard = undefined; window.__openAdmin = undefined; window.__openLogin = undefined; };
+        window.__openPin = () => setShowPin(true);
+        return () => { window.__openDashboard = undefined; window.__openAdmin = undefined; window.__openPin = undefined; };
     }, []);
     return (
         <AuthProvider>
@@ -2257,7 +2330,7 @@ export default function App() {
                 <BottomNav />
                 {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
                 {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} /></Suspense>}
-                {showLogin && <Suspense fallback={null}><LoginPage onClose={() => setShowLogin(false)} /></Suspense>}
+                {showPin && <AdminPinModal onClose={() => setShowPin(false)} />}
                     </>
                 )}
             </FavProvider>
