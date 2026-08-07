@@ -221,13 +221,24 @@ function HeroShot({ src, style }) {
 
 const STORE = { lat: 30.3429, lon: 77.9860, name: "Healthy Arena's Cafe", maxKm: 10 };
 
-function checkLocation() {
+async function checkLocation() {
+    const ipFallback = async () => {
+        try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 6000);
+            const res = await fetch("https://ipwho.is/", { signal: ctrl.signal });
+            clearTimeout(t);
+            const j = await res.json();
+            if (j.success && j.latitude && j.longitude) return { lat: j.latitude, lon: j.longitude, source: "ip" };
+        } catch (e) {}
+        return null;
+    };
     return new Promise((resolve) => {
-        if (!navigator.geolocation) return resolve(null);
+        if (!navigator.geolocation) return resolve(ipFallback());
         navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-            () => resolve(null),
-            { timeout: 8000, enableHighAccuracy: false }
+            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, source: "gps" }),
+            () => resolve(ipFallback()),
+            { timeout: 10000, enableHighAccuracy: false, maximumAge: 0 }
         );
     });
 }
@@ -399,9 +410,9 @@ function CartDrawer() {
         setGettingLoc(true);
         try {
             const pos = await checkLocation();
-            if (!pos) { toast("Location unavailable — check browser permission", "info"); return; }
+            if (!pos) { toast("Couldn't fetch location — please type your address", "info"); return; }
             setLoc(pos);
-            toast("Current location captured", "success");
+            toast(pos.source === "ip" ? "Approximate location captured (IP-based)" : "Current location captured", "success");
         } finally { setGettingLoc(false); }
     };
 
@@ -495,7 +506,7 @@ function CartDrawer() {
                             }}
                             onMouseEnter={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.16)"; }}
                             onMouseLeave={e => { if (!loc) e.currentTarget.style.background = "rgba(52,184,106,0.1)"; }}
-                        ><Icon name="pin" size={14} />{gettingLoc ? "Getting location..." : loc ? `✓ Location attached (${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)})` : "Use Current Location"}</button>
+                        ><Icon name="pin" size={14} />{gettingLoc ? "Getting location..." : loc ? `${loc.source === "ip" ? "≈ " : "✓ "}Location attached (${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)})` : "Use Current Location"}</button>
                         <div className="input-focus" style={{ display: "flex", marginTop: 10, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
                             <span style={{ display: "flex", alignItems: "center", padding: "0 14px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, borderRight: `1px solid ${C.border}` }}>+91</span>
                             <input
