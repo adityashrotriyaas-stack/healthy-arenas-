@@ -338,7 +338,7 @@ return (
             </div>
         </div>
         <div style={{ background: "rgba(9,9,11,0.6)", backdropFilter: "blur(20px)", borderTop: `1px solid ${C.border}`, position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", zIndex: 610 }}>
-            {TAB_DEFS.map(...bottom tab buttons, same style as existing pill tabs)}
+            {tabNavButtons.map(b => b)}
         </div>
     </div>
 );
