@@ -1,6 +1,7 @@
 export default async function handler(req, res) {
     const { supabase } = await import("../_lib/supabase.js");
     const { isAdmin } = await import("../_lib/admin.js");
+    const { sanitizeDish } = await import("../_lib/dishFields.js");
 
     if (req.method === "GET") {
         const { data, error } = await supabase.from("dishes").select("*").order("id");
@@ -13,20 +14,19 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
         const { parseBody } = await import("../_lib/body.js");
-        const { name, price, category, rating, time, tag, veg, image_url } = parseBody(req);
-        if (!name || !price || !category) return res.status(400).json({ error: "Missing required fields" });
-        const { data, error } = await supabase.from("dishes").insert({
-            name, price, category, rating: rating || 4.5, time: time || "10 min",
-            tag: tag || "", veg: veg !== false, image_url: image_url || "",
-        }).select().single();
+        const fields = sanitizeDish(parseBody(req));
+        if (!fields.name || !fields.price || !fields.category) return res.status(400).json({ error: "Missing required fields" });
+        const dish = { ...fields, rating: fields.rating, time: fields.time || "10 min", tag: fields.tag || "", veg: fields.veg !== false, image_url: fields.image_url || "", available: fields.available !== undefined ? fields.available : true };
+        const { data, error } = await supabase.from("dishes").insert(dish).select().single();
         if (error) return res.status(500).json({ error: error.message });
         return res.json({ dish: data });
     }
 
     if (req.method === "PUT") {
         const { parseBody } = await import("../_lib/body.js");
-        const { id, ...updates } = parseBody(req);
-        if (!id) return res.status(400).json({ error: "Missing id" });
+        const fields = sanitizeDish(parseBody(req));
+        if (!fields.id) return res.status(400).json({ error: "Missing id" });
+        const { id, ...updates } = fields;
         const { data, error } = await supabase.from("dishes").update(updates).eq("id", id).select().single();
         if (error) return res.status(500).json({ error: error.message });
         return res.json({ dish: data });
