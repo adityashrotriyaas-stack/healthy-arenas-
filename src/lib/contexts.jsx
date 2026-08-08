@@ -66,6 +66,7 @@ function DishesProvider({ children }) {
             }
         } catch (e) {}
     }, []);
+    useEffect(() => { loadFromApi(); }, [loadFromApi]);
     return <DishesContext.Provider value={{ version, getDishes, saveDishes, setVersion, loadFromApi }}>{children}</DishesContext.Provider>;
 }
 function useDishes() { return useContext(DishesContext); }

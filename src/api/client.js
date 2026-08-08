@@ -46,12 +46,6 @@ export const usersApi = {
         request("/api/auth", { method: "POST", body: JSON.stringify({ action: "updateRole", targetUserId, role }) }),
 };
 
-export const categoriesApi = {
-    list: () => request("/api/categories"),
-    create: (name) => request("/api/categories", { method: "POST", body: JSON.stringify({ name }) }),
-    remove: (id) => request("/api/categories", { method: "DELETE", body: JSON.stringify({ id }) }),
-};
-
 export const otpApi = {
     send: (phone) =>
         request("/api/otp", { method: "POST", body: JSON.stringify({ action: "send", phone }) }),
