@@ -83,8 +83,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
 
     const fetchDishes = () => setDishes(getDishes());
 
-    async function saveDishRow(dish) {
-        setSaving(true);
+    async function persistDish(dish) {
         try {
             if (dish.id) {
                 await dishesApi.update(dish.id, dish);
@@ -96,11 +95,27 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
             setDishes(updated);
             saveDishes(updated);
             toast("Saved!", "success");
-        } catch (e) { toast("Save failed", "info"); }
+            return true;
+        } catch (e) { toast("Save failed", "info"); return false; }
+    }
+
+    async function saveDishRow(dish) {
+        setSaving(true);
+        await persistDish(dish);
         setSaving(false);
         setEditIdx(null);
         fetchDishes();
     }
+
+    const toggleAvailability = async (i) => {
+        const dish = dishes[i];
+        if (!dish.id) { updateDish(i, "available", !dish.available); return; }
+        if (saving) return;
+        setSaving(true);
+        updateDish(i, "available", !dish.available);
+        await persistDish({ ...dish, available: !dish.available });
+        setSaving(false);
+    };
 
     const addDish = () => {
         const newDish = { name: "New Dish", price: "₹50", category: "Snacks & Starters", rating: 4.5, time: "10 min", tag: "", veg: true, image_url: "", prices: null, description: "", available: true };
@@ -366,13 +381,14 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                         </span>
                                         {dish.prices?.half && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: C.creamDim }}>½ {dish.prices.half}</span>}
                                         <div style={{ width: 8, height: 8, borderRadius: "50%", background: dish.veg ? C.green : C.red }} />
-                                        <button type="button" onClick={() => updateDish(i, "available", !dish.available)}
+                                        <button type="button" disabled={saving} onClick={() => toggleAvailability(i)}
                                             style={{
                                                 background: dish.available ? "rgba(232,89,12,0.15)" : "none",
                                                 border: `1px solid ${dish.available ? C.borderO : C.border}`,
-                                                cursor: "pointer", borderRadius: 50, padding: "4px 10px",
+                                                cursor: saving ? "default" : "pointer", borderRadius: 50, padding: "4px 10px",
                                                 fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600,
                                                 color: dish.available ? C.orange : C.creamDim, transition: "all 0.2s",
+                                                opacity: saving ? 0.6 : 1,
                                             }}
                                         >{dish.available ? "Available" : "Unavailable"}</button>
                                         <button type="button" onClick={() => setEditIdx(i)}
@@ -395,7 +411,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
                 <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>{filteredOrders.length} orders</span>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                     <button type="button" onClick={fetchOrders} title="Refresh"
                         style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 50, padding: "5px 10px", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, transition: "all 0.2s" }}
                     >⟳</button>
@@ -462,7 +478,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                     style={{ color: C.orange, textDecoration: "underline", fontSize: 11, fontWeight: 600 }}
                                 >View on Google Maps ↗</a>
                             )}
-                            {o.phone && <div>📞 {o.phone}</div>}
+                            {o.phone && <div>📞 <a href={`tel:${o.phone}`} style={{ color: C.orange, textDecoration: "underline", fontSize: 11, fontWeight: 600 }}>{o.phone}</a></div>}
                         </div>}
                     </div>
                 ))
