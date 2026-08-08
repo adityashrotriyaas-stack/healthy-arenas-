@@ -225,12 +225,14 @@ async function checkLocation() {
     return new Promise((resolve) => {
         if (!navigator.geolocation) return resolve(null);
         navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, source: "gps" }),
+            (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy, source: "gps" }),
             () => resolve(null),
             { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 }
         );
     });
 }
+
+const MAX_LOC_ACCURACY_M = 500;
 
 function useInView(threshold = 0.15) {
     const ref = useRef(null);
@@ -449,6 +451,10 @@ function CheckoutView() {
         try {
             const pos = await checkLocation();
             if (!pos) { toast("Location unavailable — please type your address", "info"); return; }
+            if (pos.accuracy > MAX_LOC_ACCURACY_M) {
+                toast(`Location too imprecise (${Math.round(pos.accuracy)} m) — type your address instead`, "info");
+                return;
+            }
             setLoc(pos);
             setAddress(`✓ Location captured (${pos.lat.toFixed(4)}, ${pos.lon.toFixed(4)})`);
             toast("Current location captured", "success");
@@ -931,34 +937,12 @@ function SplashScreen({ onDismiss }) {
 
 function Hero() {
     const [loaded, setLoaded] = useState(false);
-    const [locMsg, setLocMsg] = useState(null);
-    const [locType, setLocType] = useState(null);
     const [tagIdx, setTagIdx] = useState(0);
     useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
     useEffect(() => {
         const t = setInterval(() => setTagIdx(i => (i + 1) % TAGLINES.length), 3500);
         return () => clearInterval(t);
     }, []);
-
-    const handleFind = async () => {
-        setLocMsg("Detecting your location...");
-        setLocType("info");
-        const pos = await checkLocation();
-        if (!pos) {
-            setLocMsg("Allow location access to find nearby restaurants.");
-            setLocType("error");
-            return;
-        }
-        const dist = getDistance(STORE.lat, STORE.lon, pos.lat, pos.lon);
-        if (dist <= STORE.maxKm) {
-            setLocMsg(`You're ${Math.round(dist)} km away — we deliver to you!`);
-            setLocType("success");
-            setTimeout(() => document.getElementById("restaurants")?.scrollIntoView({ behavior: "smooth" }), 800);
-        } else {
-            setLocMsg(`Too far (${Math.round(dist)} km) — we only deliver within ${STORE.maxKm} km of ${STORE.name}.`);
-            setLocType("error");
-        }
-    };
 
     return (
         <section style={{
@@ -1007,39 +991,6 @@ function Hero() {
                     }}>
                         Enjoy fresh juices, protein shakes, nutritious meals, and delicious snacks prepared daily with premium ingredients.
                     </p>
-
-                    <div className="input-focus address-bar" style={{
-                        display: "flex", gap: 0, background: C.bgCard,
-                        border: `1.5px solid ${C.borderO}`, borderRadius: 50, overflow: "hidden",
-                        maxWidth: 460,
-                        opacity: loaded ? 1 : 0, transition: "opacity 0.7s 0.7s",
-                    }}>
-                        <div style={{ padding: "0 18px", display: "flex", alignItems: "center", color: C.orange, fontSize: 16, fontWeight: 700 }}>⌂</div>
-                        <input placeholder="Enter your delivery address..."
-                            style={{
-                                flex: 1, background: "none", border: "none", outline: "none",
-                                fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.cream,
-                                padding: "14px 0", minWidth: 0,
-                            }}
-                        />
-                        <button type="button" onClick={handleFind} className="ab-btn"
-                            style={{
-                                background: C.orange, border: "none", cursor: "pointer",
-                                fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700,
-                                color: "#fff", padding: "0 28px", margin: 4, borderRadius: 50,
-                                transition: "background 0.2s", whiteSpace: "nowrap",
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = C.orangeDim}
-                            onMouseLeave={e => e.currentTarget.style.background = C.orange}
-                        >Find Food</button>
-                    </div>
-                    {locMsg && (
-                        <div style={{
-                            marginTop: 12, fontFamily: "'Inter',sans-serif", fontSize: 13,
-                            color: locType === "error" ? C.red : locType === "success" ? C.green : C.creamDim,
-                            opacity: loaded ? 1 : 0, transition: "opacity 0.4s",
-                        }}>{locMsg}</div>
-                    )}
 
                 </div>
 
