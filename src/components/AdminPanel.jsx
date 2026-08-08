@@ -455,6 +455,17 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         return null;
     };
 
+    const tabButtons = NAV_TABS.map(([key, label, icon]) => (
+        <button key={key} type="button" onClick={() => setTab(key)}
+            style={{
+                flex: 1, padding: "12px 8px", background: tab === key ? "rgba(232,89,12,0.15)" : "none",
+                border: "none", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600,
+                color: tab === key ? C.orange : C.creamDim, transition: "all 0.2s", borderRadius: 10,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            }}
+        ><Icon name={icon} size={16} /> {label}</button>
+    ));
+
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 600, background: C.bg, display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, overflow: "auto", padding: "20px 16px 90px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
@@ -466,21 +477,15 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                         ← Back to Site
                     </button>
                 </div>
+                <div className="admin-desktop-tabs" style={{ gap: 6, marginBottom: 20, padding: 6, background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`, borderRadius: 16 }}>
+                    {tabButtons}
+                </div>
                 <div style={{ background: "rgba(255,255,255,0.04)", border: `1px solid rgba(255,255,255,0.08)`, borderRadius: 16, padding: "20px" }}>
                     {tabContent()}
                 </div>
             </div>
-            <div className="admin-bottombar" style={{ background: "rgba(9,9,11,0.6)", backdropFilter: "blur(20px)", borderTop: `1px solid ${C.border}`, position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", zIndex: 610 }}>
-                {NAV_TABS.map(([key, label, icon]) => (
-                    <button key={key} type="button" onClick={() => setTab(key)}
-                        style={{
-                            flex: 1, padding: "12px 8px", background: tab === key ? "rgba(232,89,12,0.15)" : "none",
-                            border: "none", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600,
-                            color: tab === key ? C.orange : C.creamDim, transition: "all 0.2s",
-                            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                        }}
-                    ><Icon name={icon} size={16} /> {label}</button>
-                ))}
+            <div className="admin-bottombar" style={{ background: "rgba(9,9,11,0.6)", backdropFilter: "blur(20px)", borderTop: `1px solid ${C.border}`, position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 610 }}>
+                {tabButtons}
             </div>
         </div>
     );

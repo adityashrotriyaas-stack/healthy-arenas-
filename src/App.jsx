@@ -1761,8 +1761,9 @@ export default function App() {
             .hamburger { display: block !important; }
             .hide-mobile { display: none !important; }
         }
-        @media (min-width: 900px) { .admin-bottombar { display: none; } }
-        @media (max-width: 480px) { .admin-topbar { display: none; } }
+        .admin-bottombar { display: flex; }
+        .admin-desktop-tabs { display: none; }
+        @media (min-width: 900px) { .admin-bottombar { display: none; } .admin-desktop-tabs { display: flex; } }
         .dish-row { flex-wrap: wrap; }
         .dish-row-controls { flex-wrap: wrap; justify-content: flex-end; }
         .diet-filters { flex-wrap: wrap; }
