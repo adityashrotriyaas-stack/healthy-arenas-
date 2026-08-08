@@ -435,9 +435,10 @@ function AddressAutocomplete({ value, onChange, placeholder }) {
 }
 
 function CheckoutView() {
-    const { items, add, remove, count, total, drawerOpen, setDrawerOpen } = useCart();
+    const { items, add, remove, clear, count, total, drawerOpen, setDrawerOpen } = useCart();
     const { toast } = useToast();
     const [checkingOut, setCheckingOut] = useState(false);
+    const [placed, setPlaced] = useState(null);
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
     const [loc, setLoc] = useState(null);
@@ -469,11 +470,49 @@ function CheckoutView() {
             : `Pickup — ${STORE.name}`;
         setCheckingOut(true);
         try {
-            await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment: null });
+            const data = await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment: null });
+            const orderObj = data?.order || {};
+            setPlaced({ id: orderObj.id ?? null, total, items: vals, mode });
+            clear();
+            setAddress("");
+            setLoc(null);
+            setPhone("");
+            setCheckingOut(false);
             toast(mode === "delivery" ? "Order placed! Pay on delivery." : "Pickup order placed! Pay at counter.", "success");
             setDrawerOpen(false);
         } catch (e) { toast("Order failed", "info"); setCheckingOut(false); }
     };
+
+    if (placed) return (
+        <div style={{ position: "fixed", inset: 0, zIndex: 460, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", overflowY: "auto" }}>
+            <div style={{ width: "min(100%, 400px)", padding: "24px 5vw 40px", textAlign: "center" }}>
+                <div style={{ width: 72, height: 72, borderRadius: "50%", margin: "0 auto 20px", background: "rgba(46,204,113,0.15)", border: "1px solid rgba(46,204,113,0.4)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(46,204,113,0.15)" }}>
+                    <Icon name="check" size={32} style={{ color: C.green }} />
+                </div>
+                <h2 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 28, color: C.cream, margin: "0 0 6px" }}>Order Placed!</h2>
+                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim, marginBottom: 24 }}>We've got your order — see you soon!</div>
+                <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 16, padding: "6px 20px", textAlign: "left", marginBottom: 20 }}>
+                    {placed.id != null && (
+                        <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.border}` }}>
+                            <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Order ID</span>
+                            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream }}>#{placed.id}</span>
+                        </div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: placed.id != null ? `1px solid ${C.border}` : "none" }}>
+                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Total</span>
+                        <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 16, color: C.orange }}>₹{placed.total.toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0" }}>
+                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Mode</span>
+                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600, color: C.cream }}>{placed.mode === "delivery" ? "Delivery" : "Pickup"}</span>
+                    </div>
+                </div>
+                <button type="button" onClick={() => setPlaced(null)}
+                    style={{ width: "100%", background: C.orange, border: "none", cursor: "pointer", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, color: "#fff", padding: "14px", borderRadius: 12, transition: "all 0.2s" }}
+                >Back to Menu</button>
+            </div>
+        </div>
+    );
 
     if (!drawerOpen) return null;
 

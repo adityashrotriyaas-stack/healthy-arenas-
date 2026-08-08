@@ -13,6 +13,7 @@ function CartProvider({ children }) {
         const existing = p[key];
         return { ...p, [key]: { name, price, qty: (existing ? existing.qty : 0) + 1 } };
     }), []);
+    const clear = useCallback(() => setItems({}), []);
     const remove = useCallback((name) => setItems(p => {
         const key = name.replace(/\s/g, "_");
         const existing = p[key];
@@ -25,7 +26,7 @@ function CartProvider({ children }) {
     const vals = Object.values(items);
     const count = vals.reduce((a, b) => a + b.qty, 0);
     const total = vals.reduce((a, b) => a + parseInt(b.price.replace(/[^0-9]/g, "")) * b.qty, 0);
-    return <CartContext.Provider value={{ items, add, remove, count, total, drawerOpen, setDrawerOpen }}>{children}</CartContext.Provider>;
+    return <CartContext.Provider value={{ items, add, remove, clear, count, total, drawerOpen, setDrawerOpen }}>{children}</CartContext.Provider>;
 }
 function useCart() { return useContext(CartContext); }
 
