@@ -68,10 +68,15 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         setEditIdx(updated.length - 1);
     };
 
-    const deleteDish = (i) => {
+    const deleteDish = async (i) => {
         if (!confirm("Delete this dish?")) return;
-        const updated = dishes.filter((_, idx) => idx !== i);
-        setDishes(updated);
+        const dish = dishes[i];
+        try {
+            if (dish.id) await dishesApi.delete(dish.id);
+            const updated = dishes.filter((_, idx) => idx !== i);
+            setDishes(updated);
+            saveDishes(updated);
+        } catch (e) { toast("Delete failed", "info"); }
     };
 
     const updateDish = (i, field, value) => {
