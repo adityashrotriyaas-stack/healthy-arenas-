@@ -40,28 +40,25 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         try { const data = await usersApi.list(); setUsers(data.users); setUsersError(false); } catch (e) { setUsersError(true); }
     }
 
-    async function saveToApi(updated) {
+    const fetchDishes = () => setDishes(getDishes());
+
+    async function saveDishRow(dish) {
         setSaving(true);
         try {
-            const existing = getDishes();
-            for (const dish of updated) {
-                if (!dish.id) {
-                    await dishesApi.create(dish);
-                } else {
-                    const orig = existing.find(d => d.id === dish.id);
-                    if (JSON.stringify(orig) !== JSON.stringify(dish)) {
-                        await dishesApi.update(dish.id, dish);
-                    }
-                }
+            if (dish.id) {
+                await dishesApi.update(dish.id, dish);
+            } else {
+                const created = await dishesApi.create(dish);
+                dish.id = created.dish.id; // capture DB id
             }
-            const deleted = existing.filter(e => !updated.find(u => u.id === e.id));
-            for (const d of deleted) await dishesApi.delete(d.id);
-            saveDishes(updated);
+            const updated = dishes.map(d => d.id === dish.id || d === dish ? dish : d);
             setDishes(updated);
-            toast("Dishes synced to database!", "success");
-        } catch (e) { toast("Failed to sync", "info"); }
+            saveDishes(updated);
+            toast("Saved!", "success");
+        } catch (e) { toast("Save failed", "info"); }
         setSaving(false);
         setEditIdx(null);
+        fetchDishes();
     }
 
     const addDish = () => {
@@ -259,10 +256,11 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                         </label>
                                         <label style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>
                                             Category
-                                            <select value={dish.category} onChange={e => updateDish(i, "category", e.target.value)}
+                                            <input list="dish-cats" value={dish.category} onChange={e => updateDish(i, "category", e.target.value)}
                                                 style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "8px 10px", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream, outline: "none", marginTop: 4 }}
-                                            >{categories.map(c => <option key={c} value={c}>{c}</option>)}</select>
+                                            />
                                         </label>
+                                        <datalist id="dish-cats">{categories.map(c => <option key={c} value={c} />)}</datalist>
                                         <label style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>
                                             Tag (e.g. Bestseller, Chef's Special)
                                             <input value={dish.tag || ""} onChange={e => updateDish(i, "tag", e.target.value)}
@@ -305,9 +303,9 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                             <button type="button" onClick={() => setEditIdx(null)}
                                                 style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 8, padding: "8px 16px", fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}
                                             >Cancel</button>
-                                            <button type="button" disabled={saving} onClick={() => saveToApi(dishes)}
+                                            <button type="button" disabled={saving} onClick={() => saveDishRow(dish)}
                                                 style={{ background: saving ? "rgba(52,184,106,0.5)" : C.green, border: "none", cursor: saving ? "default" : "pointer", borderRadius: 8, padding: "8px 16px", fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: "#fff" }}
-                                            >{saving ? "Saving..." : "Save All"}</button>
+                                            >{saving ? "Saving..." : "Save"}</button>
                                         </div>
                                     </div>
                                 ) : (
@@ -319,10 +317,18 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                             {dish.name}
                                             <span style={{ color: C.creamDim, fontSize: 11, marginLeft: 8 }}>{dish.price || dish.prices?.full}</span>
                                             {!dish.veg && <span style={{ color: C.red, fontSize: 10, marginLeft: 6 }}>NV</span>}
-                                            {dish.available === false && <span style={{ color: C.red, fontSize: 10, marginLeft: 6 }}>Unavailable</span>}
                                         </span>
                                         {dish.prices?.half && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: C.creamDim }}>½ {dish.prices.half}</span>}
                                         <div style={{ width: 8, height: 8, borderRadius: "50%", background: dish.veg ? C.green : C.red }} />
+                                        <button type="button" onClick={() => updateDish(i, "available", !dish.available)}
+                                            style={{
+                                                background: dish.available ? "rgba(232,89,12,0.15)" : "none",
+                                                border: `1px solid ${dish.available ? C.borderO : C.border}`,
+                                                cursor: "pointer", borderRadius: 50, padding: "4px 10px",
+                                                fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600,
+                                                color: dish.available ? C.orange : C.creamDim, transition: "all 0.2s",
+                                            }}
+                                        >{dish.available ? "Available" : "Unavailable"}</button>
                                         <button type="button" onClick={() => setEditIdx(i)}
                                             style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 6, padding: "4px 12px", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.amber }}
                                         >Edit</button>
