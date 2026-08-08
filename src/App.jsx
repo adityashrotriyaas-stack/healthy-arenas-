@@ -6,7 +6,6 @@ import { ordersApi } from "./api/client";
 import { Icon } from "./lib/icons";
 
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
-const AdminDashboard = lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
 
 function AdminPinModal({ onClose, onUnlock }) {
     const { unlock } = useAuth();
@@ -1657,7 +1656,7 @@ function BottomNav() {
                                 </div>
                                 {user.isAdmin && (
                                     <>
-                                        <button type="button" onClick={() => { window.__openDashboard?.(); setShowProfile(false); }}
+                                        <button type="button" onClick={() => { window.__openAdmin?.(); setShowProfile(false); }}
                                             style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.orange, marginBottom: 8 }}
                                         ><Icon name="home" size={14} /> Dashboard</button>
                                         <button type="button" onClick={() => { window.__openAdmin?.(); setShowProfile(false); }}
@@ -1719,13 +1718,11 @@ export default function App() {
     const [splash, setSplash] = useState(true);
     const [showSupport, setShowSupport] = useState(false);
     const [showAdmin, setShowAdmin] = useState(false);
-    const [showDashboard, setShowDashboard] = useState(false);
     const [showPin, setShowPin] = useState(false);
     useEffect(() => {
-        window.__openDashboard = () => setShowDashboard(true);
         window.__openAdmin = () => setShowAdmin("dashboard");
         window.__openPin = () => setShowPin(true);
-        return () => { window.__openDashboard = undefined; window.__openAdmin = undefined; window.__openPin = undefined; };
+        return () => { window.__openAdmin = undefined; window.__openPin = undefined; };
     }, []);
     return (
         <AuthProvider>
@@ -1764,6 +1761,8 @@ export default function App() {
             .hamburger { display: block !important; }
             .hide-mobile { display: none !important; }
         }
+        @media (min-width: 900px) { .admin-bottombar { display: none; } }
+        @media (max-width: 480px) { .admin-topbar { display: none; } }
         .dish-row { flex-wrap: wrap; }
         .dish-row-controls { flex-wrap: wrap; justify-content: flex-end; }
         .diet-filters { flex-wrap: wrap; }
@@ -1799,11 +1798,7 @@ export default function App() {
         }
       `}</style>
                 {splash && <SplashScreen onDismiss={() => setSplash(false)} />}
-                {showDashboard ? (
-                    <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: "rgba(200,184,154,0.6)", fontFamily: "'Inter',sans-serif" }}>Loading dashboard...</div>}><AdminDashboard onClose={() => setShowDashboard(false)} onAdminOpen={setShowAdmin} /></Suspense>
-                ) : (
-                    <>
-                <Nav onAdminOpen={setShowAdmin} onDashboardOpen={setShowDashboard} />
+                <Nav onAdminOpen={setShowAdmin} onDashboardOpen={() => setShowAdmin("dashboard")} />
                 <Hero />
                 <HowItWorks />
                 <Menu />
@@ -1819,8 +1814,6 @@ export default function App() {
                 {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
                 {showAdmin && <Suspense fallback={null}><AdminPanel onClose={() => setShowAdmin(false)} initialTab={showAdmin} /></Suspense>}
                 {showPin && <AdminPinModal onClose={() => setShowPin(false)} onUnlock={() => { setShowPin(false); setShowAdmin("dashboard"); }} />}
-                    </>
-                )}
             </FavProvider>
         </CartProvider>
         </ToastProvider>
