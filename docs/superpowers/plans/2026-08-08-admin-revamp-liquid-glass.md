@@ -252,10 +252,11 @@ const dayIdx = iso => {
 };
 
 export function totals(orders) {
+    const delivered = orders.filter(o => o.status === "delivered");
     const completed = orders.filter(o => o.status !== "cancelled");
-    const revenue = completed.reduce((s, o) => s + (o.total || 0), 0);
+    const revenue = delivered.reduce((s, o) => s + (o.total || 0), 0);
     return {
-        revenue,
+        revenue, // delivered-only per owner decision (2026-08-08)
         completedCount: completed.length,
         pendingCount: orders.filter(o => o.status === "confirmed").length,
     };
