@@ -434,6 +434,8 @@ function AddressAutocomplete({ value, onChange, placeholder }) {
     );
 }
 
+const MIN_ORDER = 200;
+
 function CheckoutView() {
     const { items, add, remove, clear, count, total, drawerOpen, setDrawerOpen } = useCart();
     const { toast } = useToast();
@@ -465,6 +467,7 @@ function CheckoutView() {
         if (checkingOut) return;
         if (mode === "delivery" && !address) { toast("Enter your delivery address", "info"); return; }
         if (phone.replace(/\D/g, "").length !== 10) { toast("Enter a valid 10-digit mobile number", "info"); return; }
+        if (total < MIN_ORDER) { toast(`Minimum order is ₹${MIN_ORDER}`, "info"); return; }
         const fullAddress = mode === "delivery"
             ? (loc ? `${address}\n📍 https://maps.google.com/?q=${loc.lat},${loc.lon}` : address)
             : `Pickup — ${STORE.name}`;
@@ -576,8 +579,13 @@ function CheckoutView() {
                                 <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, color: C.cream }}>Total</span>
                                 <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 22, color: C.orange }}>₹{total.toLocaleString()}</span>
                             </div>
-                            <button type="button" disabled={checkingOut} onClick={placeOrder}
-                                style={{ width: "100%", background: checkingOut ? "rgba(232,89,12,0.5)" : C.orange, border: "none", cursor: checkingOut ? "default" : "pointer", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, color: "#fff", padding: "14px", borderRadius: 12, transition: "all 0.2s" }}
+                            {total < MIN_ORDER && (
+                                <div style={{ textAlign: "center", fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.amber, marginBottom: 10 }}>
+                                    Minimum order ₹{MIN_ORDER} — add ₹{(MIN_ORDER - total).toLocaleString()} more
+                                </div>
+                            )}
+                            <button type="button" disabled={checkingOut || total < MIN_ORDER} onClick={placeOrder}
+                                style={{ width: "100%", background: checkingOut || total < MIN_ORDER ? "rgba(232,89,12,0.5)" : C.orange, border: "none", cursor: checkingOut || total < MIN_ORDER ? "default" : "pointer", fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 700, color: "#fff", padding: "14px", borderRadius: 12, transition: "all 0.2s" }}
                             >{checkingOut ? "Placing order..." : `Place Order (${mode === "delivery" ? "COD" : "Pickup"}) · ₹${total.toLocaleString()}`}</button>
                             <div style={{ textAlign: "center", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 10 }}>
                                 Online payments coming soon — COD only for now
