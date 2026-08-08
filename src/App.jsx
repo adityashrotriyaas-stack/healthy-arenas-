@@ -669,7 +669,19 @@ function ScrollProgress() {
 
 
 
-function Nav({ onAdminOpen }) {
+function useSecretTap(onSecret) {
+    const countRef = useRef(0);
+    const timerRef = useRef(null);
+    const tap = () => {
+        countRef.current += 1;
+        clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => { countRef.current = 0; }, 2000);
+        if (countRef.current >= 5) { countRef.current = 0; onSecret(); }
+    };
+    return tap;
+}
+
+function Nav({ onAdminPin }) {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -698,6 +710,7 @@ function Nav({ onAdminOpen }) {
     }, []);
 
     const scroll = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
+    const tap = useSecretTap(onAdminPin);
     useEffect(() => { window.__toggleDropdown = () => setShowDropdown(o => !o); return () => { window.__toggleDropdown = undefined; }; }, []);
 
     const links = [
@@ -716,7 +729,7 @@ function Nav({ onAdminOpen }) {
             transition: "all 0.35s",
             minHeight: 66,
         }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div onClick={tap} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <div style={{
                     width: 30, height: 30, borderRadius: 8,
                     background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
@@ -739,19 +752,6 @@ function Nav({ onAdminOpen }) {
                             onMouseLeave={e => e.target.style.color = C.creamDim}
                         >{label}</button>
                     ))}
-                    {user?.isAdmin && (
-                        <button type="button" onClick={() => onAdminOpen("dashboard")}
-                            style={{
-                                background: "rgba(232,89,12,0.12)", border: `1px solid ${C.borderO}`,
-                                cursor: "pointer", borderRadius: 50, padding: "7px 16px",
-                                fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600,
-                                color: C.orange, display: "flex", alignItems: "center", gap: 5,
-                                transition: "all 0.2s",
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(232,89,12,0.2)"; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "rgba(232,89,12,0.12)"; }}
-                        ><Icon name="home" size={13} /> Admin Panel</button>
-                    )}
                 </div>
 
                 <button type="button" onClick={() => setDrawerOpen(true)}
@@ -773,7 +773,7 @@ function Nav({ onAdminOpen }) {
                     )}
                 </button>
 
-                {user ? (
+                {user && (
                     <div className="hide-mobile" ref={dropdownRef} style={{ position: "relative" }}>
                         <button type="button" onClick={() => setShowDropdown(o => !o)}
                             style={{
@@ -801,18 +801,6 @@ function Nav({ onAdminOpen }) {
                                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{user.name}</div>
                                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 2 }}>{user.phone}{user.isAdmin ? <span style={{ color: C.amber, marginLeft: 6 }}>● Admin</span> : ""}</div>
                                 </div>
-                                {user.isAdmin && (
-                                    <button type="button" onClick={() => { onAdminOpen("dashboard"); setShowDropdown(false); }}
-                                        style={{
-                                            width: "100%", background: "none", border: "none", cursor: "pointer",
-                                            padding: "12px 16px", textAlign: "left", display: "flex", alignItems: "center", gap: 8,
-                                            fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.amber,
-                                            transition: "background 0.2s",
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "rgba(245,166,35,0.1)"}
-                                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                                    ><Icon name="settings" size={14} /> Admin Panel</button>
-                                )}
                                 <button type="button" onClick={() => { logout(); setShowDropdown(false); }}
                                     style={{
                                         width: "100%", background: "none", border: "none", cursor: "pointer",
@@ -826,17 +814,6 @@ function Nav({ onAdminOpen }) {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <button type="button" className="hide-mobile" onClick={() => window.__openPin?.()}
-                        style={{
-                            background: "transparent", border: `1.5px solid ${C.borderO}`,
-                            cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600,
-                            color: C.orange, padding: "7px 18px", borderRadius: 50,
-                            transition: "all 0.2s",
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,94,20,0.1)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-                    >Admin</button>
                 )}
 
                 <a href="tel:9634038986" className="nav-links" style={{
@@ -892,7 +869,7 @@ function Nav({ onAdminOpen }) {
                 }}>
                     <Icon name="phone" size={14} /> Call Us: 9634038986
                 </a>
-                {user ? (
+                {user && (
                     <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
                         background: "transparent", border: `1px solid ${C.border}`,
                         cursor: "pointer", borderRadius: 8, padding: "12px 20px",
@@ -902,16 +879,6 @@ function Nav({ onAdminOpen }) {
                         fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
                         color: C.red, textAlign: "left",
                     }}>Sign out</button>
-                ) : (
-                    <button type="button" onClick={() => { window.__openPin?.(); setMenuOpen(false); }} style={{
-                        background: C.orange, border: "none",
-                        cursor: "pointer", borderRadius: 8, padding: "12px 20px",
-                        opacity: menuOpen ? 1 : 0,
-                        transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
-                        transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
-                        fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
-                        color: "#fff", textAlign: "center",
-                    }}>Admin</button>
                 )}
             </div>
         </nav>
@@ -1688,13 +1655,6 @@ function BottomNav() {
                                         <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{user.phone}{user.isAdmin ? <span style={{ color: C.amber, marginLeft: 4 }}>● Admin</span> : ""}</div>
                                     </div>
                                 </div>
-                                {user.isAdmin && (
-                                    <>
-                                        <button type="button" onClick={() => { window.__openAdmin?.(); setShowProfile(false); }}
-                                            style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.amber, marginBottom: 8 }}
-                                        ><Icon name="settings" size={14} /> Admin Panel</button>
-                                    </>
-                                )}
                                 <button type="button" onClick={() => { logout(); setShowProfile(false); }}
                                     style={{ width: "100%", background: "rgba(221,51,51,0.08)", border: `1px solid rgba(221,51,51,0.2)`, borderRadius: 10, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.red }}
                                 ><Icon name="close" size={14} /> Sign out</button>
@@ -1705,9 +1665,6 @@ function BottomNav() {
                                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.cream, marginBottom: 4 }}>Account</div>
                                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Order without an account — just add your phone at checkout.</div>
                                 </div>
-                                <button type="button" onClick={() => { window.__openPin?.(); setShowProfile(false); }}
-                                    style={{ width: "100%", background: "rgba(232,89,12,0.12)", border: `1px solid ${C.borderO}`, cursor: "pointer", borderRadius: 10, padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700, color: C.orange, marginBottom: 8 }}
-                                >Admin access</button>
                                 <button type="button" onClick={() => setShowProfile(false)}
                                     style={{ width: "100%", background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 10, padding: "14px", fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.creamDim }}
                                 >Close</button>
@@ -1750,11 +1707,6 @@ export default function App() {
     const [showSupport, setShowSupport] = useState(false);
     const [showAdmin, setShowAdmin] = useState(false);
     const [showPin, setShowPin] = useState(false);
-    useEffect(() => {
-        window.__openAdmin = () => setShowAdmin("dashboard");
-        window.__openPin = () => setShowPin(true);
-        return () => { window.__openAdmin = undefined; window.__openPin = undefined; };
-    }, []);
     return (
         <AuthProvider>
         <DishesProvider>
@@ -1835,7 +1787,7 @@ export default function App() {
         }
       `}</style>
                 {splash && <SplashScreen onDismiss={() => setSplash(false)} />}
-                <Nav onAdminOpen={setShowAdmin} />
+                <Nav onAdminPin={() => setShowPin(true)} />
                 <Hero />
                 <HowItWorks />
                 <Menu />
