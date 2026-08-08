@@ -146,7 +146,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                 ))}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 20, marginTop: 20 }}>
+            <div className="admin-split" style={{ display: "grid", gap: 20, marginTop: 20 }}>
                 <div style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px" }}>
                     <h3 style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.cream, margin: "0 0 16px" }}>Weekly Revenue</h3>
                     {weeklyEmpty ? (
@@ -203,7 +203,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                 <div style={{ textAlign: "center", padding: "40px", fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.creamDim }}>No orders yet</div>
             ) : (
                 orders.slice(0, 5).map(o => (
-                    <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 8 }}>
+                    <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 8, flexWrap: "wrap", gap: 6 }}>
                         <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>#{o.id} — ₹{o.total}</span>
                         <StatusBadge status={o.status} />
                     </div>
@@ -236,7 +236,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                 transition: "all 0.2s",
                             }}>
                                 {editIdx === i ? (
-                                    <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                                    <div className="admin-form-grid" style={{ padding: 16, display: "grid", gap: 10 }}>
                                         <label style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>
                                             Name
                                             <input value={dish.name} onChange={e => updateDish(i, "name", e.target.value)}
@@ -316,11 +316,11 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", flexWrap: "wrap" }}>
                                         <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", flexShrink: 0, background: C.bgLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
                                             {dish.image_url ? <img src={dish.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Icon name="dish" size={16} style={{ color: C.creamDim }} />}
                                         </div>
-                                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream, flex: 1 }}>
+                                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
                                             {dish.name}
                                             <span style={{ color: C.creamDim, fontSize: 11, marginLeft: 8 }}>{dish.price || dish.prices?.full}</span>
                                             {!dish.veg && <span style={{ color: C.red, fontSize: 10, marginLeft: 6 }}>NV</span>}
@@ -393,17 +393,17 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                             </div>
                             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>{o.created_at ? new Date(o.created_at).toLocaleString() : ""}</span>
                         </div>
-                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, lineHeight: 1.6 }}>
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, lineHeight: 1.6, overflowWrap: "anywhere" }}>
                             {o.items?.map(item => `${item.name} x${item.qty}`).join(", ")}
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, flexWrap: "wrap", gap: 8 }}>
-                            <div style={{ display: "flex", gap: 16 }}>
+                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", minWidth: 0 }}>
                                 <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.orange }}>₹{o.total}</span>
                                 {o.payment_status && <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: o.payment_status === "paid" ? C.green : C.creamDim, display: "flex", alignItems: "center", gap: 4 }}>
                                     {o.payment_status === "paid" ? <><Icon name="check" size={10} /> Paid</> : <><Icon name="close" size={10} /> {o.payment_status}</>}
                                 </span>}
                             </div>
-                            <div style={{ display: "flex", gap: 6 }}>
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                                 {NEXT[o.status] && (
                                     <button type="button" onClick={() => updateOrderStatus(o.id, NEXT[o.status])}
                                         style={{ background: C.orange, border: "none", cursor: "pointer", borderRadius: 50, padding: "4px 10px", fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 600, color: "#fff", transition: "all 0.2s" }}
@@ -416,7 +416,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                 )}
                             </div>
                         </div>
-                        {(o.address || o.phone) && <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 6 }}>
+                        {(o.address || o.phone) && <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 6, overflowWrap: "anywhere", minWidth: 0 }}>
                             {o.address && <div>📍 {o.address.split("📍 ")[0]}</div>}
                             {o.address?.includes("📍 https://maps.google.com") && (
                                 <a href={o.address.split("📍 ")[1]} target="_blank" rel="noreferrer"
@@ -438,8 +438,8 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                 {users.length} user{users.length !== 1 ? "s" : ""}
             </div>
             {users.map(u => (
-                <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 8 }}>
-                    <div>
+                <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>
                         <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.cream }}>{u.name || "Unnamed"}</div>
                         <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim }}>{u.email || "—"}</div>
                         <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: "rgba(200,184,154,0.5)" }}>{u.phone ? `📞 ${u.phone}` : "—"}</div>
@@ -488,7 +488,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 600, background: C.bg, display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, overflow: "auto", padding: "20px 16px 90px", maxWidth: 1100, width: "100%", margin: "0 auto" }}>
-                <div className="admin-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div className="admin-topbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 20, color: C.cream }}>
                         Admin {tab === "dashboard" ? "" : "· " + tab}
                     </div>

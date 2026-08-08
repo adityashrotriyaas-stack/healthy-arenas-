@@ -1719,6 +1719,7 @@ export default function App() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body { background: #0B0B0D; color: #F0EDE8; }
+        #root, body { overflow-x: hidden; }
         input::placeholder { color: rgba(200,184,154,0.4); font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0F0A00; }
@@ -1748,6 +1749,10 @@ export default function App() {
         .admin-bottombar { display: flex; }
         .admin-desktop-tabs { display: none; }
         @media (min-width: 900px) { .admin-bottombar { display: none; } .admin-desktop-tabs { display: flex; } }
+        .admin-split { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
+        @media (max-width: 800px) { .admin-split { grid-template-columns: 1fr; } }
+        .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 640px) { .admin-form-grid { grid-template-columns: 1fr; } }
         .dish-row { flex-wrap: wrap; }
         .dish-row-controls { flex-wrap: wrap; justify-content: flex-end; }
         .diet-filters { flex-wrap: wrap; }
