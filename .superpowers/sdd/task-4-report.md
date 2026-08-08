@@ -37,4 +37,4 @@ No tab content or data logic touched.
 
 Build: `npm run build` (vite 6.4.3) — PASS, 616ms, 35 modules, no warnings.
 
-Commit: to fill after commit.
+Commit: `da6e4be` — "fix: admin desktop tab nav + always-visible back button" (3 files, +59/-13).
