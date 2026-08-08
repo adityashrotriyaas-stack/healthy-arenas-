@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { C } from "../lib/colors";
 import { Icon } from "../lib/icons";
 import { useDishes, useToast } from "../lib/contexts";
@@ -15,6 +15,25 @@ const NAV_TABS = [
 
 const NEXT = { pending: "confirmed", confirmed: "preparing", preparing: "delivering", delivering: "delivered" };
 
+let audioCtx = null;
+function playDing() {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    [880, 660].forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        const t = audioCtx.currentTime + i * 0.15;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.16);
+    });
+}
+
 function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const { getDishes, saveDishes, version } = useDishes();
     const { toast } = useToast();
@@ -27,6 +46,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const [orderFilter, setOrderFilter] = useState("all");
     const [ordersError, setOrdersError] = useState(false);
     const [usersError, setUsersError] = useState(false);
+    const lastIdRef = useRef(null);
 
     useEffect(() => {
         setDishes(getDishes());
@@ -34,8 +54,27 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         fetchUsers();
     }, [version, getDishes]);
 
+    useEffect(() => {
+        const id = setInterval(fetchOrders, 20000);
+        return () => clearInterval(id);
+    }, []);
+
+    function notifyNewOrder() {
+        toast("New order received!", "success");
+        try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) { /* no-op */ }
+        try { playDing(); } catch (e) { /* autoplay blocked */ }
+    }
+
     async function fetchOrders() {
-        try { const data = await ordersApi.list(null, true); setOrders(data.orders); setOrdersError(false); } catch (e) { setOrdersError(true); }
+        try {
+            const data = await ordersApi.list(null, true);
+            const list = data.orders || [];
+            setOrders(list);
+            setOrdersError(false);
+            const max = list.reduce((m, o) => Math.max(m, o.id), 0);
+            if (lastIdRef.current === null) lastIdRef.current = max;
+            else if (max > lastIdRef.current) { lastIdRef.current = max; notifyNewOrder(); }
+        } catch (e) { setOrdersError(true); }
     }
 
     async function fetchUsers() {
@@ -475,7 +514,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     };
 
     const tabButtons = NAV_TABS.map(([key, label, icon]) => (
-        <button key={key} type="button" onClick={() => setTab(key)}
+        <button key={key} type="button" onClick={() => { setTab(key); fetchOrders(); }}
             style={{
                 flex: 1, padding: "12px 8px", background: tab === key ? "rgba(232,89,12,0.15)" : "none",
                 border: "none", cursor: "pointer", fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600,
