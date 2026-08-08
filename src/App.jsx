@@ -40,7 +40,7 @@ function AdminPinModal({ onClose, onUnlock }) {
             }}>
                 <button type="button" onClick={onClose} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", cursor: "pointer", color: C.creamDim, display: "flex", alignItems: "center", justifyContent: "center", padding: 8 }}><Icon name="close" /></button>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: C.orange, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff" }}>HA</div>
+                    <img src="/logo.png" alt="Healthy Arena's" style={{ width: 36, height: 36, borderRadius: 10, objectFit: "cover" }} />
                     <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 16, color: C.cream }}>Admin access</span>
                 </div>
                 <form onSubmit={submit}>
@@ -730,11 +730,7 @@ function Nav({ onAdminPin }) {
             minHeight: 66,
         }}>
             <div onClick={tap} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <div style={{
-                    width: 30, height: 30, borderRadius: 8,
-                    background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 13, color: "#fff",
-                }}>HA</div>
+                <img src="/logo.png" alt="Healthy Arena's" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
                 <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 15, color: C.cream, letterSpacing: -0.3 }}>
                     Healthy <span style={{ color: C.orange }}>Arena's</span>
                 </span>
@@ -1682,7 +1678,7 @@ function Footer({ onSupport }) {
         <footer style={{ background: C.bg, borderTop: `1px solid ${C.border}`, padding: "44px 5vw" }}>
             <div style={{ maxWidth: 1160, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 6, background: C.orange, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 10, color: "#fff" }}>HA</div>
+                    <img src="/logo.png" alt="Healthy Arena's" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" }} />
                     <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 15, color: C.cream }}>Healthy <span style={{ color: C.orange }}>Arena's</span></span>
                 </div>
                 <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>
