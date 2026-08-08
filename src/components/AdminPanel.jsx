@@ -13,6 +13,8 @@ const NAV_TABS = [
     ["users", "Users", "chat"],
 ];
 
+const NEXT = { pending: "confirmed", confirmed: "preparing", preparing: "delivering", delivering: "delivered" };
+
 function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const { getDishes, saveDishes, version } = useDishes();
     const { toast } = useToast();
@@ -354,7 +356,10 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
                 <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>{filteredOrders.length} orders</span>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <button type="button" onClick={fetchOrders} title="Refresh"
+                        style={{ background: "none", border: `1px solid ${C.border}`, cursor: "pointer", borderRadius: 50, padding: "5px 10px", fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, transition: "all 0.2s" }}
+                    >⟳</button>
                     {["all", "pending", "confirmed", "preparing", "delivering", "delivered", "cancelled"].map(s => (
                         <button key={s} type="button" onClick={() => setOrderFilter(s)}
                             style={{
@@ -368,6 +373,14 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                     ))}
                 </div>
             </div>
+            {ordersError && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(221,51,51,0.08)", border: `1px solid rgba(221,51,51,0.25)`, borderRadius: 10, padding: "12px 16px", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
+                    <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.red }}>Couldn't load orders</span>
+                    <button type="button" onClick={fetchOrders}
+                        style={{ background: "rgba(221,51,51,0.15)", border: `1px solid rgba(221,51,51,0.3)`, cursor: "pointer", borderRadius: 50, padding: "5px 14px", fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: C.red }}
+                    >Retry</button>
+                </div>
+            )}
             {filteredOrders.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", fontFamily: "'Inter',sans-serif", fontSize: 14, color: C.creamDim }}>No orders found</div>
             ) : (
@@ -391,16 +404,11 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                                 </span>}
                             </div>
                             <div style={{ display: "flex", gap: 6 }}>
-                                {["confirmed", "preparing", "delivering", "delivered"].map(s => (
-                                    <button key={s} type="button" onClick={() => updateOrderStatus(o.id, s)}
-                                        style={{
-                                            background: o.status === s ? C.orange : "rgba(255,255,255,0.06)",
-                                            border: "none", cursor: "pointer", borderRadius: 50, padding: "4px 10px",
-                                            fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 600,
-                                            color: o.status === s ? "#fff" : C.creamDim, transition: "all 0.2s",
-                                        }}
-                                    >{s}</button>
-                                ))}
+                                {NEXT[o.status] && (
+                                    <button type="button" onClick={() => updateOrderStatus(o.id, NEXT[o.status])}
+                                        style={{ background: C.orange, border: "none", cursor: "pointer", borderRadius: 50, padding: "4px 10px", fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 600, color: "#fff", transition: "all 0.2s" }}
+                                    >→ {NEXT[o.status]}</button>
+                                )}
                                 {o.status !== "cancelled" && o.status !== "delivered" && (
                                     <button type="button" onClick={() => updateOrderStatus(o.id, "cancelled")}
                                         style={{ background: "rgba(221,51,51,0.15)", border: "none", cursor: "pointer", borderRadius: 50, padding: "4px 10px", fontFamily: "'Inter',sans-serif", fontSize: 10, fontWeight: 600, color: C.red }}
