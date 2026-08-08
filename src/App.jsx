@@ -66,7 +66,7 @@ function AdminPinModal({ onClose, onUnlock }) {
                             fontFamily: "'Inter',sans-serif", fontSize: 16, fontWeight: 700,
                             color: "#fff", padding: "14px", borderRadius: 12, marginTop: 20, minHeight: 48,
                         }}
-                    >{loading ? "Checking..." : "Open Dashboard"}</button>
+                    >{loading ? "Checking..." : "Open Admin Panel"}</button>
                 </form>
                 <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${C.border}`, fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, textAlign: "center" }}>
                     For cafe staff only.
@@ -622,7 +622,7 @@ function ScrollProgress() {
 
 
 
-function Nav({ onAdminOpen, onDashboardOpen }) {
+function Nav({ onAdminOpen }) {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -693,7 +693,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                         >{label}</button>
                     ))}
                     {user?.isAdmin && (
-                        <button type="button" onClick={() => onDashboardOpen(true)}
+                        <button type="button" onClick={() => onAdminOpen("dashboard")}
                             style={{
                                 background: "rgba(232,89,12,0.12)", border: `1px solid ${C.borderO}`,
                                 cursor: "pointer", borderRadius: 50, padding: "7px 16px",
@@ -703,7 +703,7 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                             }}
                             onMouseEnter={e => { e.currentTarget.style.background = "rgba(232,89,12,0.2)"; }}
                             onMouseLeave={e => { e.currentTarget.style.background = "rgba(232,89,12,0.12)"; }}
-                        ><Icon name="home" size={13} /> Dashboard</button>
+                        ><Icon name="home" size={13} /> Admin Panel</button>
                     )}
                 </div>
 
@@ -754,19 +754,6 @@ function Nav({ onAdminOpen, onDashboardOpen }) {
                                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{user.name}</div>
                                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 2 }}>{user.phone}{user.isAdmin ? <span style={{ color: C.amber, marginLeft: 6 }}>● Admin</span> : ""}</div>
                                 </div>
-                                {user.isAdmin && (
-                                    <button type="button" onClick={() => { onDashboardOpen(true); setShowDropdown(false); }}
-                                        style={{
-                                            width: "100%", background: "none", border: "none", cursor: "pointer",
-                                            padding: "12px 16px", textAlign: "left", display: "flex", alignItems: "center", gap: 8,
-                                            fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.orange,
-                                            borderBottom: `1px solid ${C.border}`,
-                                            transition: "background 0.2s",
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "rgba(232,89,12,0.1)"}
-                                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                                    ><Icon name="home" size={14} /> Dashboard</button>
-                                )}
                                 {user.isAdmin && (
                                     <button type="button" onClick={() => { onAdminOpen("dashboard"); setShowDropdown(false); }}
                                         style={{
@@ -1657,9 +1644,6 @@ function BottomNav() {
                                 {user.isAdmin && (
                                     <>
                                         <button type="button" onClick={() => { window.__openAdmin?.(); setShowProfile(false); }}
-                                            style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.orange, marginBottom: 8 }}
-                                        ><Icon name="home" size={14} /> Dashboard</button>
-                                        <button type="button" onClick={() => { window.__openAdmin?.(); setShowProfile(false); }}
                                             style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.amber, marginBottom: 8 }}
                                         ><Icon name="settings" size={14} /> Admin Panel</button>
                                     </>
@@ -1799,7 +1783,7 @@ export default function App() {
         }
       `}</style>
                 {splash && <SplashScreen onDismiss={() => setSplash(false)} />}
-                <Nav onAdminOpen={setShowAdmin} onDashboardOpen={() => setShowAdmin("dashboard")} />
+                <Nav onAdminOpen={setShowAdmin} />
                 <Hero />
                 <HowItWorks />
                 <Menu />
