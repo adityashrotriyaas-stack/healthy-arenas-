@@ -1685,7 +1685,7 @@ function Footer({ onSupport }) {
                     © {new Date().getFullYear()} · All rights reserved
                 </div>
                 <div style={{ display: "flex", gap: 24 }}>
-                    {["Privacy", "Terms", "Support", "Careers"].map(l => (
+                    {["Support"].map(l => (
                         <button key={l} type="button" onClick={() => { if (l === "Support") onSupport?.(); }}
                             style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: "rgba(200,184,154,0.5)", background: "none", border: "none", cursor: "pointer", transition: "color 0.2s" }}
                             onMouseEnter={e => e.target.style.color = C.cream}
