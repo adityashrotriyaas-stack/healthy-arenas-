@@ -1090,7 +1090,7 @@ function Hero() {
                         </div>
                     </div>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                        {[["30 min", "Avg. delivery"], ["500+", "Restaurants"], ["4.9★", "Rating"]].map(([val, lbl]) => (
+                        {[["30 min", "Avg. delivery"], ["4.9★", "Rating"]].map(([val, lbl]) => (
                             <div key={lbl} style={{ textAlign: "center", background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 12, padding: "8px 16px", minWidth: 80 }}>
                                 <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 18, color: C.cream }}>{val}</div>
                                 <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 2 }}>{lbl}</div>
