@@ -3,10 +3,11 @@ export default async function handler(req, res) {
     const { isAdmin } = await import("../_lib/admin.js");
 
     if (req.method === "GET") {
-        const { userId, all } = req.query;
+        const { userId, phone, all } = req.query;
         if (all && !isAdmin(req)) return res.status(403).json({ error: "Admin only" });
         let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
         if (!all && userId) query = query.eq("user_id", userId);
+        if (!all && phone) query = query.eq("phone", phone);
         const { data, error } = await query;
         if (error) return res.status(500).json({ error: error.message });
         return res.json({ orders: data });

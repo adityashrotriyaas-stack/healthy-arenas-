@@ -35,7 +35,7 @@ export const dishesApi = {
 };
 
 export const ordersApi = {
-    list: (userId, all) => request(`/api/orders?userId=${userId || ""}&all=${all ? "true" : ""}`),
+    list: (userId, all, phone) => request(`/api/orders?userId=${userId || ""}&all=${all ? "true" : ""}&phone=${phone || ""}`),
     create: (order) => request("/api/orders", { method: "POST", body: JSON.stringify(order) }),
     updateStatus: (id, status) => request("/api/orders", { method: "PUT", body: JSON.stringify({ id, status }) }),
 };

@@ -264,17 +264,62 @@ function useCounter(end, duration = 1600, trigger) {
 }
 
 function OrderTracker() {
-    const steps = [
-        { icon: "1", label: "Order placed", sub: "Just now" },
-        { icon: "2", label: "Preparing", sub: "Est. 8 min" },
-        { icon: "3", label: "On the way", sub: "~12 min left" },
-        { icon: "✓", label: "Delivered", sub: "Your door" },
-    ];
-    const [activeStep, setActiveStep] = useState(0);
-    useEffect(() => {
-        const t = setInterval(() => setActiveStep(s => s >= 3 ? 0 : s + 1), 3000);
-        return () => clearInterval(t);
+    const [order, setOrder] = useState(null);
+    const [state, setState] = useState("loading"); // loading | none | ok
+
+    const fetchTrack = useCallback(async () => {
+        const phone = localStorage.getItem("last_order_phone");
+        if (!phone) { setOrder(null); setState("none"); return; }
+        try {
+            const data = await ordersApi.list("", false, phone);
+            const latest = (data?.orders || []).find(o => o.status !== "cancelled") || data?.orders?.[0] || null;
+            setOrder(latest);
+            setState(latest ? "ok" : "none");
+        } catch (e) { setOrder(null); setState("none"); }
     }, []);
+
+    useEffect(() => {
+        fetchTrack();
+        const t = setInterval(fetchTrack, 20000);
+        return () => clearInterval(t);
+    }, [fetchTrack]);
+
+    if (state !== "ok" || !order) {
+        return (
+            <div style={{
+                background: C.bgCard, border: `1px solid ${C.borderO}`,
+                borderRadius: 20, padding: "24px", minWidth: 300,
+                boxShadow: `0 0 60px rgba(255,94,20,0.12)`,
+                textAlign: "center",
+            }}>
+                <div style={{
+                    width: 48, height: 48, borderRadius: "50%", margin: "0 auto 14px",
+                    background: "rgba(255,94,20,0.12)", border: `1px solid ${C.borderO}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                }}><Icon name="pin" size={20} style={{ color: C.orange }} /></div>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 16, color: C.cream }}>Track your order live</div>
+                <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12.5, color: C.creamDim, lineHeight: 1.6, marginTop: 6, maxWidth: 260, margin: "6px auto 0" }}>
+                    Place an order and it will appear here with live updates from kitchen to your door.
+                </div>
+            </div>
+        );
+    }
+
+    const STATUS_STEP = { pending: 0, confirmed: 1, preparing: 2, delivering: 2, delivered: 3 };
+    const activeStep = STATUS_STEP[order.status] ?? 0;
+    const cancelled = order.status === "cancelled";
+    const steps = [
+        { label: "Order placed", sub: "Just now" },
+        { label: "Preparing", sub: "Est. 10–15 min" },
+        { label: "On the way", sub: "Delivering soon" },
+        { label: "Delivered", sub: "Enjoy your meal!" },
+    ];
+    const itemsSummary = (order.items || []).slice(0, 2).map(i => i.name).join(" · ") + ((order.items || []).length > 2 ? ` +${order.items.length - 2}` : "");
+    const chip = cancelled
+        ? { text: "Cancelled", color: C.red, bg: "rgba(255,71,87,0.15)", bd: "rgba(255,71,87,0.35)" }
+        : order.status === "delivered"
+            ? { text: "Delivered", color: C.green, bg: "rgba(46,204,113,0.15)", bd: "rgba(46,204,113,0.35)" }
+            : { text: "Live", color: "rgba(255,94,20,1)", bg: "rgba(255,94,20,0.15)", bd: "rgba(255,94,20,0.35)" };
 
     return (
         <div style={{
@@ -284,14 +329,20 @@ function OrderTracker() {
         }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div>
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: C.cream }}>Order #FD-2847</div>
-                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, marginTop: 2 }}>Spice Garden · Butter Chicken + 2</div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: C.cream }}>Order #{String(order.id || "").slice(0, 8).toUpperCase() || "—"}</div>
+                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, marginTop: 2 }}>{itemsSummary || "Your order"}</div>
                 </div>
-                <div style={{
-                    background: "rgba(46,204,113,0.15)", border: "1px solid rgba(46,204,113,0.3)",
-                    borderRadius: 20, padding: "4px 12px",
-                    fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: C.green,
-                }}>Live</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <button type="button" onClick={fetchTrack} title="Refresh status"
+                        style={{ background: "none", border: "none", cursor: "pointer", color: C.creamDim, padding: 4, display: "flex" }}>
+                        <Icon name="refresh" size={14} />
+                    </button>
+                    <div style={{
+                        background: chip.bg, border: `1px solid ${chip.bd}`,
+                        borderRadius: 20, padding: "4px 12px",
+                        fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: chip.color,
+                    }}>{chip.text}</div>
+                </div>
             </div>
 
             {steps.map((step, i) => (
@@ -299,23 +350,27 @@ function OrderTracker() {
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                         <div style={{
                             width: 36, height: 36, borderRadius: "50%",
-                            background: i === activeStep
-                                ? `linear-gradient(135deg, ${C.orange}, ${C.orangeDim})`
-                                : i < activeStep ? "rgba(255,94,20,0.25)" : "rgba(255,255,255,0.06)",
-                            border: `2px solid ${i <= activeStep ? C.orange : "rgba(255,255,255,0.1)"}`,
-                            boxShadow: i === activeStep ? `0 0 12px rgba(255,94,20,0.4)` : "none",
+                            background: cancelled
+                                ? "rgba(255,72,87,0.15)"
+                                : i === activeStep
+                                    ? `linear-gradient(135deg, ${C.orange}, ${C.orangeDim})`
+                                    : i < activeStep ? "rgba(255,94,20,0.25)" : "rgba(255,255,255,0.06)",
+                            border: cancelled ? "2px solid rgba(255,72,87,0.4)"
+                                : `2px solid ${i <= activeStep ? C.orange : "rgba(255,255,255,0.1)"}`,
+                            boxShadow: i === activeStep && !cancelled ? `0 0 12px rgba(255,94,20,0.4)` : "none",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             fontSize: i < activeStep ? 13 : 16,
                             transition: "all 0.5s",
                         }}>
-                            {i < activeStep ? <Icon name="check" size={13} /> : step.icon === "✓" ? <Icon name="check" size={13} /> : step.icon}
+                            {cancelled ? "✕" : i < activeStep ? <Icon name="check" size={13} /> : i === steps.length - 1 ? <Icon name="check" size={13} /> : i + 1}
                         </div>
                         {i < 3 && (
                             <div style={{
                                 width: 2, height: 28,
-                                background: i < activeStep
-                                    ? `linear-gradient(to bottom, ${C.orange}, rgba(255,94,20,0.3))`
-                                    : "rgba(255,255,255,0.07)",
+                                background: cancelled ? "rgba(255,72,87,0.2)"
+                                    : i < activeStep
+                                        ? `linear-gradient(to bottom, ${C.orange}, rgba(255,94,20,0.3))`
+                                        : "rgba(255,255,255,0.07)",
                                 transition: "all 0.5s",
                             }} />
                         )}
@@ -323,12 +378,14 @@ function OrderTracker() {
                     <div style={{ paddingTop: 7 }}>
                         <div style={{
                             fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: i === activeStep ? 600 : 400,
-                            color: i === activeStep ? C.cream : i < activeStep ? "rgba(255,248,239,0.5)" : "rgba(255,248,239,0.3)",
+                            color: cancelled ? "rgba(255,72,87,0.7)"
+                                : i === activeStep ? C.cream : i < activeStep ? "rgba(255,248,239,0.5)" : "rgba(255,248,239,0.3)",
                             transition: "all 0.5s",
                         }}>{step.label}</div>
                         <div style={{
                             fontFamily: "'Inter',sans-serif", fontSize: 12,
-                            color: i === activeStep ? C.orange : "rgba(255,248,239,0.25)",
+                            color: cancelled ? "rgba(255,72,87,0.5)"
+                                : i === activeStep ? C.orange : "rgba(255,248,239,0.25)",
                             transition: "all 0.5s",
                         }}>{step.sub}</div>
                     </div>
@@ -337,8 +394,8 @@ function OrderTracker() {
 
             <div style={{ marginTop: 20, background: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "12px 14px", display: "flex", justifyContent: "space-between" }}>
                 <div>
-                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>Estimated arrival</div>
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.amber }}>12–18 min</div>
+                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>Order total</div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 18, color: C.amber }}>₹{(order.total || 0).toLocaleString()}</div>
                 </div>
                 <div style={{ textAlign: "right" }}>
                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>Delivery fee</div>
@@ -475,6 +532,7 @@ function CheckoutView() {
         try {
             const data = await ordersApi.create({ items: vals, total, address: fullAddress, phone, payment: null });
             const orderObj = data?.order || {};
+            localStorage.setItem("last_order_phone", phone.replace(/\D/g, ""));
             setPlaced({ id: orderObj.id ?? null, total, items: vals, mode });
             clear();
             setAddress("");
