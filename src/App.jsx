@@ -1814,6 +1814,54 @@ function Footer({ onSupport }) {
     );
 }
 
+function AdminNotifier() {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const lastCountRef = useRef(null);
+
+    useEffect(() => {
+        if (!user?.isAdmin) return;
+        let audioCtx;
+        function playDing() {
+            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === "suspended") audioCtx.resume();
+            [880, 660].forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.value = freq;
+                const t = audioCtx.currentTime + i * 0.15;
+                gain.gain.setValueAtTime(0.0001, t);
+                gain.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+                osc.connect(gain).connect(audioCtx.destination);
+                osc.start(t);
+                osc.stop(t + 0.16);
+            });
+        }
+        async function check() {
+            try {
+                const data = await ordersApi.list(null, true);
+                const list = data.orders || [];
+                if (lastCountRef.current === null) lastCountRef.current = list.length;
+                else if (list.length > lastCountRef.current) {
+                    lastCountRef.current = list.length;
+                    toast("New order received!", "success");
+                    try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) {}
+                    try { playDing(); } catch (e) {}
+                    const orig = document.title;
+                    document.title = "\uD83D\uDD14 New Order!";
+                    setTimeout(() => { document.title = orig; }, 4000);
+                }
+            } catch (e) {}
+        }
+        check();
+        const id = setInterval(check, 10000);
+        return () => clearInterval(id);
+    }, [user, toast]);
+    return null;
+}
+
 export default function App() {
     const [splash, setSplash] = useState(true);
     const [showSupport, setShowSupport] = useState(false);
@@ -1825,6 +1873,7 @@ export default function App() {
         <ToastProvider>
         <CartProvider>
             <FavProvider>
+                <AdminNotifier />
                 <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

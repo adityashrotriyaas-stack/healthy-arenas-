@@ -15,25 +15,6 @@ const NAV_TABS = [
 
 const NEXT = { pending: "confirmed", confirmed: "preparing", preparing: "delivering", delivering: "delivered" };
 
-let audioCtx = null;
-function playDing() {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    [880, 660].forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-        const t = audioCtx.currentTime + i * 0.15;
-        gain.gain.setValueAtTime(0.0001, t);
-        gain.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.16);
-    });
-}
-
 function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const { getDishes, saveDishes, version } = useDishes();
     const { toast } = useToast();
@@ -46,8 +27,6 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const [orderFilter, setOrderFilter] = useState("all");
     const [ordersError, setOrdersError] = useState(false);
     const [usersError, setUsersError] = useState(false);
-    const lastCountRef = useRef(null);
-
     useEffect(() => {
         setDishes(getDishes());
         fetchOrders();
@@ -59,23 +38,11 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         return () => clearInterval(id);
     }, []);
 
-    function notifyNewOrder() {
-        toast("New order received!", "success");
-        try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) { /* no-op */ }
-        try { playDing(); } catch (e) { /* autoplay blocked */ }
-        const orig = document.title;
-        document.title = "🔔 New Order!";
-        setTimeout(() => { document.title = orig; }, 4000);
-    }
-
     async function fetchOrders() {
         try {
             const data = await ordersApi.list(null, true);
-            const list = data.orders || [];
-            setOrders(list);
+            setOrders(data.orders || []);
             setOrdersError(false);
-            if (lastCountRef.current === null) lastCountRef.current = list.length;
-            else if (list.length > lastCountRef.current) { lastCountRef.current = list.length; notifyNewOrder(); }
         } catch (e) { setOrdersError(true); }
     }
 
