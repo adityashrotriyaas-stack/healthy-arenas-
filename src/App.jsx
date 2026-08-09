@@ -739,7 +739,7 @@ function useSecretTap(onSecret) {
     return tap;
 }
 
-function Nav({ onAdminPin }) {
+function Nav({ onAdminPin, onOpenAdmin }) {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -855,6 +855,16 @@ function Nav({ onAdminPin }) {
                                     <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>{user.name}</div>
                                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, marginTop: 2 }}>{user.phone}{user.isAdmin ? <span style={{ color: C.amber, marginLeft: 6 }}>● Admin</span> : ""}</div>
                                 </div>
+                                <button type="button" onClick={() => { setShowDropdown(false); onOpenAdmin("dashboard"); }}
+                                    style={{
+                                        width: "100%", background: "none", border: "none", cursor: "pointer",
+                                        padding: "12px 16px", textAlign: "left",
+                                        fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream,
+                                        transition: "background 0.2s",
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,94,20,0.1)"}
+                                    onMouseLeave={e => e.currentTarget.style.background = "none"}
+                                >Dashboard</button>
                                 <button type="button" onClick={() => { logout(); setShowDropdown(false); }}
                                     style={{
                                         width: "100%", background: "none", border: "none", cursor: "pointer",
@@ -1841,7 +1851,7 @@ export default function App() {
         }
       `}</style>
                 {splash && <SplashScreen onDismiss={() => setSplash(false)} />}
-                <Nav onAdminPin={() => setShowPin(true)} />
+                <Nav onAdminPin={() => setShowPin(true)} onOpenAdmin={(tab) => setShowAdmin(tab)} />
                 <Hero />
                 <HowItWorks />
                 <Menu />
