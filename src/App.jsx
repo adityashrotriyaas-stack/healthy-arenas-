@@ -964,15 +964,26 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                     <Icon name="phone" size={14} /> Call Us: 9634038986
                 </a>
                 {user && (
-                    <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
-                        background: "transparent", border: `1px solid ${C.border}`,
-                        cursor: "pointer", borderRadius: 8, padding: "12px 20px",
-                        opacity: menuOpen ? 1 : 0,
-                        transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
-                        transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
-                        fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
-                        color: C.red, textAlign: "left",
+                    <>
+                        <button type="button" onClick={() => { setMenuOpen(false); onOpenAdmin("dashboard"); }} style={{
+                            background: C.orange, border: `1px solid ${C.orange}`,
+                            cursor: "pointer", borderRadius: 8, padding: "12px 20px",
+                            opacity: menuOpen ? 1 : 0,
+                            transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
+                            transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
+                            fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
+                            color: "#fff", textAlign: "left",
+                        }}><Icon name="settings" size={14} style={{ marginRight: 8 }} />Dashboard</button>
+                        <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
+                            background: "transparent", border: `1px solid ${C.border}`,
+                            cursor: "pointer", borderRadius: 8, padding: "12px 20px",
+                            opacity: menuOpen ? 1 : 0,
+                            transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
+                            transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
+                            fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
+                            color: C.red, textAlign: "left",
                     }}>Sign out</button>
+                    </>
                 )}
             </div>
         </nav>
