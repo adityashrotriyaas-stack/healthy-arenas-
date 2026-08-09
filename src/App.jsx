@@ -858,7 +858,21 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                 </button>
 
                 {user && (
-                    <div className="hide-mobile" ref={dropdownRef} style={{ position: "relative" }}>
+                    <>
+                        <button type="button" className="hide-desktop" onClick={() => onOpenAdmin("dashboard")}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                                background: "rgba(255,94,20,0.15)", border: `1px solid ${C.borderO}`,
+                                borderRadius: 50, padding: 5,
+                            }}
+                        >
+                            <div style={{
+                                width: 30, height: 30, borderRadius: "50%",
+                                background: C.orange, display: "flex", alignItems: "center", justifyContent: "center",
+                                fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 12, color: "#fff",
+                            }}>{user.avatar}</div>
+                        </button>
+                        <div className="hide-mobile" ref={dropdownRef} style={{ position: "relative" }}>
                         <button type="button" onClick={() => setShowDropdown(o => !o)}
                             style={{
                                 display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
@@ -908,6 +922,7 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                             </div>
                         )}
                     </div>
+                    </>
                 )}
 
                 <a href="tel:9634038986" className="nav-links" style={{
@@ -964,26 +979,15 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                     <Icon name="phone" size={14} /> Call Us: 9634038986
                 </a>
                 {user && (
-                    <>
-                        <button type="button" onClick={() => { setMenuOpen(false); onOpenAdmin("dashboard"); }} style={{
-                            background: C.orange, border: `1px solid ${C.orange}`,
-                            cursor: "pointer", borderRadius: 8, padding: "12px 20px",
-                            opacity: menuOpen ? 1 : 0,
-                            transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
-                            transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
-                            fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
-                            color: "#fff", textAlign: "left",
-                        }}><Icon name="settings" size={14} style={{ marginRight: 8 }} />Dashboard</button>
-                        <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
-                            background: "transparent", border: `1px solid ${C.border}`,
-                            cursor: "pointer", borderRadius: 8, padding: "12px 20px",
-                            opacity: menuOpen ? 1 : 0,
-                            transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
-                            transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
-                            fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
-                            color: C.red, textAlign: "left",
+                    <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
+                        background: "transparent", border: `1px solid ${C.border}`,
+                        cursor: "pointer", borderRadius: 8, padding: "12px 20px",
+                        opacity: menuOpen ? 1 : 0,
+                        transform: menuOpen ? "translateY(0)" : "translateY(-8px)",
+                        transition: `all 0.25s ${0.05 + 0.04 * mobileItems.length}s`,
+                        fontFamily: "'Inter',sans-serif", fontSize: 15, fontWeight: 600,
+                        color: C.red, textAlign: "left",
                     }}>Sign out</button>
-                    </>
                 )}
             </div>
         </nav>
@@ -1852,6 +1856,10 @@ export default function App() {
             .nav-links { display: none !important; }
             .hamburger { display: block !important; }
             .hide-mobile { display: none !important; }
+            .hide-desktop { display: flex !important; }
+        }
+        @media (min-width: 641px) {
+            .hide-desktop { display: none !important; }
         }
         .admin-bottombar { display: flex; }
         .admin-desktop-tabs { display: none; }
