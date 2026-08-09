@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Arena's Cafe — Menu</title>
+<style>
+  @page { size: A4; margin: 15mm 12mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; background: #fff; padding: 20px 30px; }
+  .header { text-align: center; margin-bottom: 18px; border-bottom: 3px solid #E8590C; padding-bottom: 14px; }
+  .header h1 { font-size: 26px; color: #05050E; letter-spacing: -0.5px; }
+  .header h1 span { color: #E8590C; }
+  .header p { font-size: 11px; color: #666; margin-top: 4px; }
+  .legend { display: flex; gap: 16px; justify-content: center; margin-bottom: 14px; font-size: 10px; color: #888; }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 3px; vertical-align: middle; }
+  .legend .dot.v { border: 2px solid #34B86A; }
+  .legend .dot.nv { border: 2px solid #E54848; background: #E54848; }
+  .category { margin-bottom: 14px; page-break-inside: avoid; }
+  .cat-title { font-size: 14px; font-weight: 700; color: #E8590C; border-bottom: 1.5px solid #E8590C; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .items { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+  .item { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted #e5e5e5; }
+  .item-name { font-size: 11.5px; font-weight: 500; color: #1a1a1a; display: flex; align-items: center; gap: 5px; }
+  .item-name .tag { font-size: 8px; color: #E8590C; background: rgba(232,89,12,0.08); padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+  .price, .price-half, .price-full { font-size: 11.5px; font-weight: 700; color: #E8590C; white-space: nowrap; }
+  .veg { color: #34B86A; font-size: 9px; }
+  .nonveg { color: #E54848; font-size: 9px; }
+  .footer { text-align: center; margin-top: 16px; padding-top: 10px; border-top: 2px solid #eee; font-size: 9px; color: #999; }
+  @media print { body { padding: 0; } .category { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Healthy <span>Arena's</span> Cafe</h1>
+  <p>Order online at healthyarena.shop &bull; Call: 9634038986</p>
+</div>
+<div class="legend">
+  <span><span class="dot v"></span> Vegetarian</span>
+  <span><span class="dot nv"></span> Non-Vegetarian</span>
+</div>
+<div class="category">
+  <div class="cat-title">Juices</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Mausami Juice <span class="tag">Fresh</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Orange Juice <span class="tag">Vitamin C</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Carrot + Beetroot Juice <span class="tag">Healthy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Watermelon Juice <span class="tag">Refreshing</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Pineapple Juice <span class="tag">Sweet</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Mix Fruit Juice <span class="tag">Popular</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Pomegranate Juice <span class="tag">Premium</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Shakes</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Banana Shake <span class="tag">Classic</span></span>
+      <span><span class="price">₹50</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Papaya Shake <span class="tag">Healthy</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Mango Shake <span class="tag">Seasonal Special</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chiku Shake <span class="tag">Sweet</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Strawberry Shake <span class="tag">Fruity</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Dates Shake <span class="tag">Energy Booster</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Butterscotch Shake <span class="tag">Rich</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Vanilla Shake <span class="tag">Creamy</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Oreo Shake <span class="tag">Bestseller</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chocolate Shake <span class="tag">Choco Rich</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Badam Shake <span class="tag">Nutty</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> KitKat Shake <span class="tag">Premium</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Coolers</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Virgin Mojito <span class="tag">Minty</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Blue Lagoon <span class="tag">Chill</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Watermelon Mojito <span class="tag">Fruity</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Green Apple Mojito <span class="tag">Tangy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Black Currant Mojito <span class="tag">Sweet & Sour</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Beverages</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Tea <span class="tag">Hot</span></span>
+      <span><span class="price">₹20</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Masala Tea <span class="tag">Spicy & Warm</span></span>
+      <span><span class="price">₹30</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Hot Coffee <span class="tag">Bold</span></span>
+      <span><span class="price">₹40</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Lassi (Sweet / Salted) <span class="tag">Traditional</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Cold Coffee <span class="tag">Creamy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Maggie</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Plain Maggie <span class="tag">Comfort Snack</span></span>
+      <span><span class="price">₹40</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Masala Maggie <span class="tag">Spicy</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Vegetable Maggie <span class="tag">Veggies Loaded</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Maggie <span class="tag">Egg Lovers</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Breakfast</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Plain Paratha <span class="tag">Breakfast Choice</span></span>
+      <span><span class="price">₹30</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Aloo Paratha <span class="tag">Desi Classic</span></span>
+      <span><span class="price">₹50</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Onion Paratha <span class="tag">Tasty</span></span>
+      <span><span class="price">₹50</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Paratha <span class="tag">Protein Rich</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Mix Paratha <span class="tag">Loaded</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Paratha <span class="tag">Egg Lovers</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Plain Omelette <span class="tag">Quick Bite</span></span>
+      <span><span class="price">₹50</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Bread Omelette <span class="tag">Popular Breakfast</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Cheese Omelette <span class="tag">Cheesy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Poha <span class="tag">Light & Healthy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Soups</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Soup <span class="tag">Comfort</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Soup <span class="tag">Hot & Hearty</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Hot n Sour (Veg) <span class="tag">Tangy</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Hot n Sour (Non-Veg) <span class="tag">Tangy</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Sweet Corn Soup (Veg) <span class="tag">Classic</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Sweet Corn Soup (Non-Veg) <span class="tag">Classic</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Thupka <span class="tag">Tibetan Special</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Thupka <span class="tag">Tibetan Special</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Chopsuey <span class="tag">Loaded</span></span>
+      <span><span class="price">₹170</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Chopsuey <span class="tag">Loaded</span></span>
+      <span><span class="price">₹170</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Noodles</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Chowmein <span class="tag">Street Style</span></span>
+      <span><span class="price-half">₹60</span> / <span class="price-full">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Chowmein <span class="tag">Paneer Loaded</span></span>
+      <span><span class="price-half">₹100</span> / <span class="price-full">₹170</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Chowmein <span class="tag">Protein Loaded</span></span>
+      <span><span class="price-half">₹70</span> / <span class="price-full">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Chowmein <span class="tag">Chicken Rich</span></span>
+      <span><span class="price-half">₹100</span> / <span class="price-full">₹170</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Singapori Chowmein <span class="tag">Spicy</span></span>
+      <span><span class="price-half">₹80</span> / <span class="price-full">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Singapori Chowmein <span class="tag">Spicy & Egg</span></span>
+      <span><span class="price-half">₹90</span> / <span class="price-full">₹180</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Singapori Chowmein <span class="tag">Spicy & Chicken</span></span>
+      <span><span class="price-half">₹120</span> / <span class="price-full">₹200</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chilly Garlic Chowmein <span class="tag">Garlicky</span></span>
+      <span><span class="price-half">₹90</span> / <span class="price-full">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Chilly Garlic Chowmein <span class="tag">Paneer Loaded</span></span>
+      <span><span class="price-half">₹100</span> / <span class="price-full">₹160</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Chilly Garlic Chowmein <span class="tag">Egg Loaded</span></span>
+      <span><span class="price-half">₹90</span> / <span class="price-full">₹160</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Chilly Garlic Chowmein <span class="tag">Chicken Loaded</span></span>
+      <span><span class="price-half">₹130</span> / <span class="price-full">₹200</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Chilly Garlic Hakka Noodles <span class="tag">Hakka Style</span></span>
+      <span><span class="price-half">₹80</span> / <span class="price-full">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Chilly Garlic Hakka Noodles <span class="tag">Hakka Style</span></span>
+      <span><span class="price-half">₹120</span> / <span class="price-full">₹200</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Healthy Arena Special Chowmein (Veg) <span class="tag">Chef's Special</span></span>
+      <span><span class="price">₹200</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Healthy Arena Special Chowmein (Non-Veg) <span class="tag">Chef's Special</span></span>
+      <span><span class="price">₹240</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Rolls</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Aloo Roll <span class="tag">Crispy</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Roll <span class="tag">Healthy Fill</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Soya Chaap Roll <span class="tag">Bestseller</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Single Egg Roll <span class="tag">Classic Egg</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Double Egg Roll <span class="tag">Double Fun</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Paneer Roll <span class="tag">Paneer & Egg</span></span>
+      <span><span class="price">₹140</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Chicken Roll <span class="tag">Meat Loaded</span></span>
+      <span><span class="price">₹140</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Roll <span class="tag">Chicken Filled</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Roll <span class="tag">Paneer Lover</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Main Course</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Tawa Roti <span class="tag">Fresh</span></span>
+      <span><span class="price">₹10</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Tawa Butter Roti <span class="tag">Buttery</span></span>
+      <span><span class="price">₹15</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Dal Fry <span class="tag">Home Style</span></span>
+      <span><span class="price">₹90</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Dal Tadka <span class="tag">Spicy Tadka</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Dal Makhani <span class="tag">Rich Gravy</span></span>
+      <span><span class="price">₹200</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Jeera Aloo <span class="tag">Dry Veg</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Mix Veg <span class="tag">Healthy</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Gobhi Masala <span class="tag">Dry Veg</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Bhindi Masala <span class="tag">Dry Veg</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Shahi Paneer <span class="tag">Rich Gravy</span></span>
+      <span><span class="price-half">₹180</span> / <span class="price-full">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Matar Paneer <span class="tag">Classic</span></span>
+      <span><span class="price-half">₹180</span> / <span class="price-full">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Kadhai Paneer <span class="tag">Spicy Paneer</span></span>
+      <span><span class="price-half">₹180</span> / <span class="price-full">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Butter Masala <span class="tag">Rich Gravy</span></span>
+      <span><span class="price-half">₹180</span> / <span class="price-full">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Butter Masala <span class="tag">Bestseller</span></span>
+      <span><span class="price-half">₹350</span> / <span class="price-full">₹600</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Kadai <span class="tag">Spicy</span></span>
+      <span><span class="price-half">₹250</span> / <span class="price-full">₹400</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Curry <span class="tag">Spicy</span></span>
+      <span><span class="price-half">₹250</span> / <span class="price-full">₹400</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Bhurji <span class="tag">Protein Loaded</span></span>
+      <span><span class="price-half">₹50</span> / <span class="price-full">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Bhurji <span class="tag">Rich & Creamy</span></span>
+      <span><span class="price-half">₹150</span> / <span class="price-full">₹200</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Rice</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Plain Rice <span class="tag">Simple</span></span>
+      <span><span class="price">₹60</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Jeera Rice <span class="tag">Aromatic</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Fried Rice <span class="tag">Stir Fried</span></span>
+      <span><span class="price-half">₹60</span> / <span class="price-full">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Fried Rice <span class="tag">Egg Loaded</span></span>
+      <span><span class="price-half">₹70</span> / <span class="price-full">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Fried Rice <span class="tag">Paneer Rich</span></span>
+      <span><span class="price-half">₹90</span> / <span class="price-full">₹170</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Fried Rice <span class="tag">Chicken Rich</span></span>
+      <span><span class="price-half">₹120</span> / <span class="price-full">₹170</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Lunch & Dinner</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Thali <span class="tag">Complete Meal</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Dal Chawal <span class="tag">Comfort Food</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Thali <span class="tag">Non-Veg Feast</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Chawal <span class="tag">Satisfying</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Snacks & Starters</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Momos <span class="tag">Steamed</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Momos <span class="tag">Paneer Rich</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Momos <span class="tag">Juicy</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Honey Chilli Potato <span class="tag">Bestseller</span></span>
+      <span><span class="price">₹160</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Manchurian (Dry/Gravy) <span class="tag">Chinese Special</span></span>
+      <span><span class="price">₹160</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chilli Potato <span class="tag">Sweet & Spicy</span></span>
+      <span><span class="price">₹130</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chilli Paneer (Dry/Gravy) <span class="tag">Classic Starter</span></span>
+      <span><span class="price">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chilli Chicken (Dry/Gravy) <span class="tag">Non-Veg Choice</span></span>
+      <span><span class="price">₹300</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chilli Mushroom (Dry/Gravy) <span class="tag">Spicy</span></span>
+      <span><span class="price">₹250</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Spring Roll <span class="tag">Crispy</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> French Fries <span class="tag">Salted Classic</span></span>
+      <span><span class="price">₹70</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Peri-peri Fries <span class="tag">Spicy & Hot</span></span>
+      <span><span class="price">₹90</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Cheesy Peri Peri Fries <span class="tag">Extra Cheese</span></span>
+      <span><span class="price">₹110</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Cheese Nuggets <span class="tag">Cheese Melt</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Nuggets <span class="tag">Party Snack</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Popcorn <span class="tag">Snackable</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Wings <span class="tag">Glazed</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Chilli Gobhi <span class="tag">Sweet & Spicy</span></span>
+      <span><span class="price">₹130</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Fries <span class="tag">Crispy Meat</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Breast <span class="tag">Lean Protein</span></span>
+      <span><span class="price">₹120</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Veg Burger <span class="tag">Crispy Patty</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Non-Veg Burger <span class="tag">Chicken Patty</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Burger <span class="tag">Paneer Loaded</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Healthy Diet</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Paneer Salad <span class="tag">Fitness Fuel</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Egg Soya Salad <span class="tag">Gym Special</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="nonveg" title="Non-Veg">&#9679;</span> Chicken Salad <span class="tag">Low Carb</span></span>
+      <span><span class="price">₹150</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Fruit Salad Bowl (Customized) <span class="tag">Custom choice</span></span>
+      <span><span class="price">₹100</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Sprout <span class="tag">High Protein</span></span>
+      <span><span class="price">₹80</span></span>
+    </div>
+  </div>
+</div>
+<div class="category">
+  <div class="cat-title">Add-ons</div>
+  <div class="items">
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Ice-cream (per scoop) <span class="tag">Add scoop</span></span>
+      <span><span class="price">₹20</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Cheese <span class="tag">Extra topping</span></span>
+      <span><span class="price">₹20</span></span>
+    </div>
+    <div class="item">
+      <span class="item-name"><span class="veg" title="Vegetarian">&#9679;</span> Cold Drinks <span class="tag">MRP</span></span>
+      <span><span class="price">M.R.P</span></span>
+    </div>
+  </div>
+</div>
+<div class="footer">
+  All prices inclusive of taxes &bull; Menu subject to availability &bull; Printed 9/8/2026
+</div>
+</body></html>

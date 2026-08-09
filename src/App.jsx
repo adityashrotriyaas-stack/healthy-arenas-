@@ -498,6 +498,7 @@ const MIN_ORDER = 200;
 
 function CheckoutView() {
     const { items, add, remove, clear, count, total, drawerOpen, setDrawerOpen } = useCart();
+    const { getDishes } = useDishes();
     const { toast } = useToast();
     const [checkingOut, setCheckingOut] = useState(false);
     const [placed, setPlaced] = useState(null);
@@ -507,6 +508,10 @@ function CheckoutView() {
     const [gettingLoc, setGettingLoc] = useState(false);
     const [mode, setMode] = useState("delivery");
     const vals = Object.values(items);
+    const allDishes = getDishes();
+    const cartNames = new Set(vals.map(v => v.name));
+    const cartCategories = [...new Set(vals.map(v => allDishes.find(d => d.name === v.name)?.category).filter(Boolean))];
+    const suggestions = allDishes.filter(d => cartCategories.includes(d.category) && !cartNames.has(d.name)).slice(0, 4);
 
     const useMyLocation = async () => {
         setGettingLoc(true);
@@ -678,6 +683,28 @@ function CheckoutView() {
                                     <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.green }}>Free</span>
                                 </div>
                             </div>
+                            {suggestions.length > 0 && (
+                                <div style={{ marginTop: 16 }}>
+                                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.creamDim, marginBottom: 8 }}>You might also like</div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        {suggestions.map(d => {
+                                            const p = d.prices ? d.prices.half : d.price;
+                                            return (
+                                                <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px" }}>
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, color: C.cream, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.name}</div>
+                                                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.orange }}>{p}</div>
+                                                    </div>
+                                                    <button type="button" onClick={() => add(d.name, p)}
+                                                        style={{ background: C.orange, border: "none", cursor: "pointer", width: 28, height: 28, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0, marginLeft: 8 }}>
+                                                        <Icon name="plus" size={14} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -1488,7 +1515,10 @@ function StatsBanner() {
 
 function FeaturedDishes() {
     const [ref, inView] = useInView(0.1);
-    const featured = useMemo(() => DISHES.filter(d => FEATURED_TAGS.includes(d.tag) || d.rating >= 4.9).slice(0, 4), []);
+    const daySeed = Math.floor(Date.now() / 86400000);
+    const pool = DISHES.filter(d => FEATURED_TAGS.includes(d.tag) || d.rating >= 4.9);
+    const start = daySeed % pool.length;
+    const featured = pool.slice(start, start + 4).concat(pool).slice(0, 4);
     return (
         <section ref={ref} style={{ background: C.bg, padding: "72px 5vw" }}>
             <div style={{ maxWidth: 1160, margin: "0 auto" }}>

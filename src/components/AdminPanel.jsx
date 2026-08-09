@@ -46,7 +46,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     const [orderFilter, setOrderFilter] = useState("all");
     const [ordersError, setOrdersError] = useState(false);
     const [usersError, setUsersError] = useState(false);
-    const lastIdRef = useRef(null);
+    const lastCountRef = useRef(null);
 
     useEffect(() => {
         setDishes(getDishes());
@@ -55,7 +55,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
     }, [version, getDishes]);
 
     useEffect(() => {
-        const id = setInterval(fetchOrders, 20000);
+        const id = setInterval(fetchOrders, 10000);
         return () => clearInterval(id);
     }, []);
 
@@ -63,6 +63,9 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         toast("New order received!", "success");
         try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) { /* no-op */ }
         try { playDing(); } catch (e) { /* autoplay blocked */ }
+        const orig = document.title;
+        document.title = "🔔 New Order!";
+        setTimeout(() => { document.title = orig; }, 4000);
     }
 
     async function fetchOrders() {
@@ -71,9 +74,8 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
             const list = data.orders || [];
             setOrders(list);
             setOrdersError(false);
-            const max = list.reduce((m, o) => Math.max(m, o.id), 0);
-            if (lastIdRef.current === null) lastIdRef.current = max;
-            else if (max > lastIdRef.current) { lastIdRef.current = max; notifyNewOrder(); }
+            if (lastCountRef.current === null) lastCountRef.current = list.length;
+            else if (list.length > lastCountRef.current) { lastCountRef.current = list.length; notifyNewOrder(); }
         } catch (e) { setOrdersError(true); }
     }
 
