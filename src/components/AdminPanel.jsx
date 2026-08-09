@@ -4,7 +4,7 @@ import { Icon } from "../lib/icons";
 import { useDishes, useToast } from "../lib/contexts";
 import { dishesApi, ordersApi, usersApi } from "../api/client";
 import { StatusBadge } from "./StatusBadge";
-import { totals, weeklyTotals, maxAmount } from "../lib/stats";
+import { totals, weeklyTotals, maxAmount, orderShortId } from "../lib/stats";
 
 const NAV_TABS = [
     ["dashboard", "Home", "home"],
@@ -144,7 +144,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
         try {
             await ordersApi.updateStatus(id, status);
             setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
-            toast(`Order #${id} → ${status}`, "success");
+            toast(`Order #${orderShortId(id)} → ${status}`, "success");
         } catch (e) { toast("Failed to update", "info"); }
     }
 
@@ -258,7 +258,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
             ) : (
                 orders.slice(0, 5).map(o => (
                     <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 8, flexWrap: "wrap", gap: 6 }}>
-                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>#{o.id} — ₹{o.total}</span>
+                        <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>#{orderShortId(o.id)} — ₹{o.total}</span>
                         <StatusBadge status={o.status} />
                     </div>
                 ))
@@ -443,7 +443,7 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                     <div key={o.id} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px", marginBottom: 12 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>Order #{o.id}</span>
+                                <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 600, fontSize: 14, color: C.cream }}>Order #{orderShortId(o.id)}</span>
                                 <StatusBadge status={o.status} />
                             </div>
                             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim }}>{o.created_at ? new Date(o.created_at).toLocaleString() : ""}</span>

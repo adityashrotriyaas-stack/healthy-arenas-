@@ -3,6 +3,7 @@ import { C } from "./lib/colors";
 import { CartProvider, FavProvider, DishesProvider, AuthProvider, ToastProvider, useAuth, useCart, useFav, useDishes, useToast } from "./lib/contexts";
 import { DISHES, FEATURED_TAGS } from "./data/dishes";
 import { ordersApi } from "./api/client";
+import { orderShortId } from "./lib/stats";
 import { Icon } from "./lib/icons";
 
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
@@ -280,8 +281,10 @@ function OrderTracker() {
 
     useEffect(() => {
         fetchTrack();
-        const t = setInterval(fetchTrack, 20000);
-        return () => clearInterval(t);
+        const t = setInterval(fetchTrack, 10000);
+        const onVis = () => { if (document.visibilityState === "visible") fetchTrack(); };
+        document.addEventListener("visibilitychange", onVis);
+        return () => { clearInterval(t); document.removeEventListener("visibilitychange", onVis); };
     }, [fetchTrack]);
 
     if (state !== "ok" || !order) {
@@ -329,7 +332,7 @@ function OrderTracker() {
         }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <div>
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: C.cream }}>Order #{String(order.id || "").slice(0, 8).toUpperCase() || "—"}</div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 15, color: C.cream }}>Order #{orderShortId(order.id)}</div>
                     <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, marginTop: 2 }}>{itemsSummary || "Your order"}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -556,7 +559,7 @@ function CheckoutView() {
                     {placed.id != null && (
                         <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.border}` }}>
                             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Order ID</span>
-                            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream }}>#{placed.id}</span>
+                            <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 700, fontSize: 14, color: C.cream }}>#{orderShortId(placed.id)}</span>
                         </div>
                     )}
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: placed.id != null ? `1px solid ${C.border}` : "none" }}>

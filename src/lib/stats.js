@@ -30,3 +30,9 @@ export function weeklyTotals(orders) {
 export function maxAmount(weekly) {
     return Math.max(1, ...weekly.map(d => d.amount));
 }
+
+export function orderShortId(id) {
+    if (!id) return "—";
+    const num = parseInt(id.replace(/-/g, "").slice(0, 8), 16) % 10000;
+    return `FD-${String(num).padStart(4, "0")}`;
+}
