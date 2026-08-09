@@ -508,10 +508,10 @@ function CheckoutView() {
     const [gettingLoc, setGettingLoc] = useState(false);
     const [mode, setMode] = useState("delivery");
     const vals = Object.values(items);
-    const allDishes = getDishes();
+    const allDishes = getDishes() || [];
     const cartNames = new Set(vals.map(v => v.name));
     const cartCategories = [...new Set(vals.map(v => allDishes.find(d => d.name === v.name)?.category).filter(Boolean))];
-    const suggestions = allDishes.filter(d => cartCategories.includes(d.category) && !cartNames.has(d.name)).slice(0, 4);
+    const suggestions = cartCategories.length ? allDishes.filter(d => cartCategories.includes(d.category) && !cartNames.has(d.name)).slice(0, 4) : [];
 
     const useMyLocation = async () => {
         setGettingLoc(true);
@@ -569,7 +569,7 @@ function CheckoutView() {
                     )}
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: placed.id != null ? `1px solid ${C.border}` : "none" }}>
                         <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Total</span>
-                        <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 16, color: C.orange }}>₹{placed.total.toLocaleString()}</span>
+                        <span style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 16, color: C.orange }}>₹{(placed.total || 0).toLocaleString()}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0" }}>
                         <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.creamDim }}>Mode</span>
