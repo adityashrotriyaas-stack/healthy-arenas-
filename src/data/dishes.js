@@ -115,6 +115,8 @@ const DISHES = [
     { initial: "C", name: "Chicken Butter Masala", prices: { half: "\u20B9350", full: "\u20B9600" }, rating: 4.9, time: "30 min", tag: "Bestseller", color: GRADIENTS[0], category: "Main Course", veg: false },
     { initial: "C", name: "Chicken Kadai", prices: { half: "\u20B9250", full: "\u20B9400" }, rating: 4.8, time: "30 min", tag: "Spicy", color: GRADIENTS[4], category: "Main Course", veg: false },
     { initial: "C", name: "Chicken Curry", prices: { half: "\u20B9250", full: "\u20B9400" }, rating: 4.8, time: "30 min", tag: "Spicy", color: GRADIENTS[4], category: "Main Course", veg: false },
+    { initial: "E", name: "Egg Bhurji", prices: { half: "\u20B950", full: "\u20B9100" }, rating: 4.7, time: "15 min", tag: "Protein Loaded", color: GRADIENTS[0], category: "Main Course", veg: false },
+    { initial: "P", name: "Paneer Bhurji", prices: { half: "\u20B9150", full: "\u20B9200" }, rating: 4.8, time: "20 min", tag: "Rich & Creamy", color: GRADIENTS[3], category: "Main Course", veg: true },
     // Rice
     { initial: "P", name: "Plain Rice", price: "\u20B960", rating: 4.4, time: "15 min", tag: "Simple", color: GRADIENTS[6], category: "Rice", veg: true },
     { initial: "J", name: "Jeera Rice", price: "\u20B980", rating: 4.6, time: "15 min", tag: "Aromatic", color: GRADIENTS[6], category: "Rice", veg: true },
@@ -148,6 +150,9 @@ const DISHES = [
     { initial: "C", name: "Chilli Gobhi", price: "\u20B9130", rating: 4.7, time: "15 min", tag: "Sweet & Spicy", color: GRADIENTS[3], category: "Snacks & Starters", veg: true },
     { initial: "C", name: "Chicken Fries", price: "\u20B9120", rating: 4.7, time: "15 min", tag: "Crispy Meat", color: GRADIENTS[4], category: "Snacks & Starters", veg: false },
     { initial: "C", name: "Chicken Breast", price: "\u20B9120", rating: 4.8, time: "18 min", tag: "Lean Protein", color: GRADIENTS[3], category: "Snacks & Starters", veg: false },
+    { initial: "V", name: "Veg Burger", price: "\u20B980", rating: 4.6, time: "12 min", tag: "Crispy Patty", color: GRADIENTS[1], category: "Snacks & Starters", veg: true },
+    { initial: "N", name: "Non-Veg Burger", price: "\u20B9100", rating: 4.7, time: "12 min", tag: "Chicken Patty", color: GRADIENTS[4], category: "Snacks & Starters", veg: false },
+    { initial: "P", name: "Paneer Burger", price: "\u20B9100", rating: 4.8, time: "12 min", tag: "Paneer Loaded", color: GRADIENTS[3], category: "Snacks & Starters", veg: true },
     // Healthy Diet
     { initial: "P", name: "Paneer Salad", price: "\u20B9150", rating: 4.9, time: "10 min", tag: "Fitness Fuel", color: GRADIENTS[3], category: "Healthy Diet", veg: true },
     { initial: "E", name: "Egg Soya Salad", price: "\u20B9100", rating: 4.8, time: "12 min", tag: "Gym Special", color: GRADIENTS[3], category: "Healthy Diet", veg: false },

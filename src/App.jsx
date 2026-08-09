@@ -173,10 +173,10 @@ const TAGLINES = [
 ];
 
 const HERO_SHOT = [
+    "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    "https://images.pexels.com/photos/674574/pexels-photo-674574.jpeg?auto=compress&cs=tinysrgb&w=1600",
     "https://upload.wikimedia.org/wikipedia/commons/7/71/Healthy_Lentil_Salad_%28Unsplash%29.jpg",
-    "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg",
-    "https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg",
-    "https://images.pexels.com/photos/674574/pexels-photo-674574.jpeg",
 ];
 
 const CATEGORY_GRADIENTS = {
@@ -210,9 +210,9 @@ function dishImg(initial, color, category) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function HeroShot({ src, style }) {
+function HeroShot({ src, style, eager }) {
     const [current, setCurrent] = useState(src);
-    return <img src={current} alt="" style={style} loading="lazy" onError={() => {
+    return <img src={current} alt="" style={style} loading={eager ? "eager" : "lazy"} fetchpriority={eager ? "high" : undefined} onError={() => {
         const rest = HERO_SHOT.filter(s => s !== current);
         if (rest.length) setCurrent(rest[0]);
     }} />;
@@ -1004,7 +1004,7 @@ function Hero() {
                             border: `2px solid ${C.borderO}`, boxShadow: "0 20px 60px rgba(232,89,12,0.2)",
                             transform: "rotate(6deg)", zIndex: 3,
                         }}>
-                            <HeroShot src={HERO_SHOT[0]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            <HeroShot src={HERO_SHOT[0]} eager style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                         </div>
                         <div style={{
                             position: "absolute", bottom: "5%", left: "5%", width: "50%", aspectRatio: "1/1",
