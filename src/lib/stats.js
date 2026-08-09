@@ -33,6 +33,7 @@ export function maxAmount(weekly) {
 
 export function orderShortId(id) {
     if (!id) return "—";
-    const num = parseInt(id.replace(/-/g, "").slice(0, 8), 16) % 10000;
+    const s = String(id);
+    const num = parseInt(s.replace(/-/g, "").slice(0, 8), 16) % 10000;
     return `FD-${String(num).padStart(4, "0")}`;
 }
