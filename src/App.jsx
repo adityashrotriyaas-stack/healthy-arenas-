@@ -1814,40 +1814,156 @@ function Footer({ onSupport }) {
     );
 }
 
+function OrderAlert({ order, onAccept, onDecline }) {
+    const [countdown, setCountdown] = useState(30);
+    const vibrateRef = useRef(null);
+
+    useEffect(() => {
+        if (!navigator.vibrate) return;
+        vibrateRef.current = setInterval(() => {
+            try { navigator.vibrate([300, 100, 300, 100, 300]); } catch (e) {}
+        }, 2000);
+        return () => { clearInterval(vibrateRef.current); try { navigator.vibrate(0); } catch (e) {} };
+    }, []);
+
+    useEffect(() => {
+        if (countdown <= 0) { onDecline(); return; }
+        const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+        return () => clearTimeout(t);
+    }, [countdown, onDecline]);
+
+    const items = (order.items || []).map(i => `${i.name} × ${i.qty}`).join("\n");
+    const sumItems = (order.items || []).map(i => i.name).join(", ");
+
+    return (
+        <div style={{
+            position: "fixed", inset: 0, zIndex: 10000,
+            background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 16,
+        }}>
+            <div style={{
+                background: C.bgCard, border: `2px solid ${C.orange}`,
+                borderRadius: 24, width: "min(100%, 420px)", overflow: "hidden",
+                boxShadow: "0 0 80px rgba(232,89,12,0.35)",
+                animation: "toast-in 0.3s ease-out",
+            }}>
+                <div style={{
+                    background: `linear-gradient(135deg, ${C.orange}, ${C.orangeDim})`,
+                    padding: "20px 24px", textAlign: "center",
+                }}>
+                    <div style={{ fontSize: 36, marginBottom: 8, animation: "float 1s ease-in-out infinite" }}>\uD83D\uDD14</div>
+                    <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 22, color: "#fff" }}>NEW ORDER</div>
+                    <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 13, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>
+                        Auto-snooze in {countdown}s
+                    </div>
+                </div>
+
+                <div style={{ padding: "20px 24px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                        <div>
+                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, textTransform: "uppercase", letterSpacing: 1 }}>Amount</div>
+                            <div style={{ fontFamily: "'Playfair Display',serif", fontWeight: 800, fontSize: 28, color: C.orange }}>
+                                {"\u20B9"}{order.total || 0}
+                            </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, textTransform: "uppercase", letterSpacing: 1 }}>Payment</div>
+                            <div style={{ fontFamily: "'Inter',sans-serif", fontWeight: 600, fontSize: 14, color: C.cream }}>COD</div>
+                        </div>
+                    </div>
+
+                    <div style={{ background: C.bg, borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, color: C.creamDim, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Items</div>
+                        {(order.items || []).map((item, i) => (
+                            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontFamily: "'Inter',sans-serif", fontSize: 13, color: C.cream }}>
+                                <span>{item.name} × {item.qty}</span>
+                                <span style={{ color: C.orange }}>{item.price}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {order.phone && (
+                        <div style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, color: C.creamDim, marginBottom: 16 }}>
+                            \u260E {order.phone}
+                        </div>
+                    )}
+
+                    <div style={{ display: "flex", gap: 10 }}>
+                        <button type="button" onClick={onDecline} style={{
+                            flex: 1, background: "rgba(221,51,51,0.1)", border: `1px solid rgba(221,51,51,0.3)`,
+                            borderRadius: 12, padding: "14px", cursor: "pointer",
+                            fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700, color: C.red,
+                        }}>Decline</button>
+                        <button type="button" onClick={onAccept} style={{
+                            flex: 2, background: `linear-gradient(135deg, ${C.green}, #1A7A42)`,
+                            border: "none", borderRadius: 12, padding: "14px", cursor: "pointer",
+                            fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 800, color: "#fff",
+                            boxShadow: "0 4px 20px rgba(46,204,113,0.3)",
+                        }}>Accept Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function AdminNotifier() {
     const { user } = useAuth();
     const { toast } = useToast();
     const lastCountRef = useRef(null);
+    const [alertOrder, setAlertOrder] = useState(null);
+    const [acceptedIds, setAcceptedIds] = useState(new Set());
+    const [snoozedUntil, setSnoozedUntil] = useState(0);
+    const audioCtxRef = useRef(null);
+    const unlockedRef = useRef(false);
 
     useEffect(() => {
         if (!user?.isAdmin) return;
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
-        let audioCtx;
+        function unlockAudio() {
+            if (unlockedRef.current) return;
+            try {
+                audioCtxRef.current = audioCtxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+                const osc = audioCtxRef.current.createOscillator();
+                const gain = audioCtxRef.current.createGain();
+                gain.gain.value = 0.001;
+                osc.connect(gain).connect(audioCtxRef.current.destination);
+                osc.start();
+                osc.stop(audioCtxRef.current.currentTime + 0.01);
+                unlockedRef.current = true;
+            } catch (e) {}
+            document.removeEventListener("click", unlockAudio);
+        }
+        document.addEventListener("click", unlockAudio);
         function playDing() {
-            audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === "suspended") audioCtx.resume();
-            [880, 660, 880, 660].forEach((freq, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = "sine";
-                osc.frequency.value = freq;
-                const t = audioCtx.currentTime + i * 0.18;
-                gain.gain.setValueAtTime(0.0001, t);
-                gain.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
-                osc.connect(gain).connect(audioCtx.destination);
-                osc.start(t);
-                osc.stop(t + 0.18);
-            });
+            try {
+                audioCtxRef.current = audioCtxRef.current || new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+                [880, 660, 880, 660, 1100, 880].forEach((freq, i) => {
+                    const osc = audioCtxRef.current.createOscillator();
+                    const gain = audioCtxRef.current.createGain();
+                    osc.type = "sine";
+                    osc.frequency.value = freq;
+                    const t = audioCtxRef.current.currentTime + i * 0.15;
+                    gain.gain.setValueAtTime(0.001, t);
+                    gain.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+                    osc.connect(gain).connect(audioCtxRef.current.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.15);
+                });
+            } catch (e) {}
         }
         function pushNotify(order) {
             if (!("Notification" in window) || Notification.permission !== "granted") return;
             const items = (order.items || []).slice(0, 3).map(i => i.name).join(", ");
             const more = (order.items || []).length > 3 ? ` +${order.items.length - 3} more` : "";
             new Notification("New Order!", {
-                body: `₹${order.total || 0} — ${items}${more}`,
+                body: `\u20B9${order.total || 0} — ${items}${more}`,
                 icon: "/logo.png",
                 tag: "new-order",
                 requireInteraction: true,
@@ -1861,21 +1977,52 @@ function AdminNotifier() {
                 else if (list.length > lastCountRef.current) {
                     lastCountRef.current = list.length;
                     const newest = list[0];
-                    toast(`New order! ₹${newest?.total || 0}`, "success");
-                    try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) {}
-                    try { playDing(); } catch (e) {}
-                    pushNotify(newest);
-                    const orig = document.title;
-                    document.title = "\uD83D\uDD14 New Order!";
-                    setTimeout(() => { document.title = orig; }, 5000);
+                    if (newest && !acceptedIds.has(newest.id)) {
+                        setAlertOrder(newest);
+                        try { playDing(); } catch (e) {}
+                        pushNotify(newest);
+                        const orig = document.title;
+                        document.title = "\uD83D\uDD14 NEW ORDER! \uD83D\uDD14";
+                        const flash = setInterval(() => {
+                            document.title = document.title.includes("NEW ORDER") ? orig : "\uD83D\uDD14 NEW ORDER! \uD83D\uDD14";
+                        }, 1500);
+                        setTimeout(() => { clearInterval(flash); document.title = orig; }, 15000);
+                    }
+                }
+                // Re-alert after snooze
+                if (snoozedUntil > 0 && Date.now() >= snoozedUntil && !alertOrder) {
+                    const data2 = await ordersApi.list(null, true);
+                    const unaccepted = (data2.orders || []).find(o => !acceptedIds.has(o.id) && o.status === "pending");
+                    if (unaccepted) {
+                        setAlertOrder(unaccepted);
+                        setSnoozedUntil(0);
+                        try { playDing(); } catch (e) {}
+                    }
                 }
             } catch (e) {}
         }
         check();
         const id = setInterval(check, 10000);
-        return () => clearInterval(id);
-    }, [user, toast]);
-    return null;
+        return () => { clearInterval(id); document.removeEventListener("click", unlockAudio); };
+    }, [user, toast, acceptedIds, snoozedUntil, alertOrder]);
+
+    const handleAccept = async (order) => {
+        try { await ordersApi.updateStatus(order.id, "confirmed"); } catch (e) {}
+        setAcceptedIds(prev => new Set([...prev, order.id]));
+        setAlertOrder(null);
+        setSnoozedUntil(0);
+        try { navigator.vibrate(0); } catch (e) {}
+        toast(`Order #${orderShortId(order.id)} confirmed!`, "success");
+    };
+
+    const handleDecline = (order) => {
+        setAlertOrder(null);
+        setSnoozedUntil(Date.now() + 60000);
+        try { navigator.vibrate(0); } catch (e) {}
+    };
+
+    if (!alertOrder) return null;
+    return <OrderAlert order={alertOrder} onAccept={() => handleAccept(alertOrder)} onDecline={() => handleDecline(alertOrder)} />;
 }
 
 export default function App() {
