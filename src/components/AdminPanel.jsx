@@ -177,15 +177,15 @@ function AdminPanel({ onClose, initialTab = "dashboard" }) {
                     ) : (
                         <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 140 }}>
                             {weekly.map((d, i) => (
-                                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%" }}>
                                     <div style={{
-                                        width: "100%", borderRadius: "6px 6px 0 0",
-                                        height: `${Math.max((d.amount / maxAmt) * 100, 1)}%`,
+                                        width: "100%", borderRadius: "6px 6px 0 0", marginTop: "auto",
+                                        height: `${Math.max((d.amount / maxAmt) * 104, d.amount > 0 ? 4 : 2)}px`,
                                         background: `linear-gradient(to top, ${C.orange}, ${C.amber})`,
-                                        opacity: 0.8, transition: "opacity 0.2s", minHeight: 4,
+                                        opacity: d.amount > 0 ? 0.8 : 0.12, transition: "opacity 0.2s",
                                     }}
                                         onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = "0.8"}
+                                        onMouseLeave={e => e.currentTarget.style.opacity = d.amount > 0 ? "0.8" : "0.12"}
                                     />
                                     <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: C.creamDim }}>{d.label}</span>
                                 </div>

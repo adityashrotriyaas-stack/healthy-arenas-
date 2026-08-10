@@ -5,6 +5,10 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
         const { userId, phone, all } = req.query;
         if (all && !isAdmin(req)) return res.status(403).json({ error: "Admin only" });
+        if (all) {
+            const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            await supabase.from("orders").delete().lt("created_at", cutoff);
+        }
         let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
         if (!all && userId) query = query.eq("user_id", userId);
         if (!all && phone) query = query.eq("phone", phone);
