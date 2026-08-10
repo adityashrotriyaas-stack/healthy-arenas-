@@ -1821,22 +1821,36 @@ function AdminNotifier() {
 
     useEffect(() => {
         if (!user?.isAdmin) return;
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
         let audioCtx;
         function playDing() {
             audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === "suspended") audioCtx.resume();
-            [880, 660].forEach((freq, i) => {
+            [880, 660, 880, 660].forEach((freq, i) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = "sine";
                 osc.frequency.value = freq;
-                const t = audioCtx.currentTime + i * 0.15;
+                const t = audioCtx.currentTime + i * 0.18;
                 gain.gain.setValueAtTime(0.0001, t);
-                gain.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.2, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
                 osc.connect(gain).connect(audioCtx.destination);
                 osc.start(t);
-                osc.stop(t + 0.16);
+                osc.stop(t + 0.18);
+            });
+        }
+        function pushNotify(order) {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            const items = (order.items || []).slice(0, 3).map(i => i.name).join(", ");
+            const more = (order.items || []).length > 3 ? ` +${order.items.length - 3} more` : "";
+            new Notification("New Order!", {
+                body: `₹${order.total || 0} — ${items}${more}`,
+                icon: "/logo.png",
+                tag: "new-order",
+                requireInteraction: true,
             });
         }
         async function check() {
@@ -1846,12 +1860,14 @@ function AdminNotifier() {
                 if (lastCountRef.current === null) lastCountRef.current = list.length;
                 else if (list.length > lastCountRef.current) {
                     lastCountRef.current = list.length;
-                    toast("New order received!", "success");
+                    const newest = list[0];
+                    toast(`New order! ₹${newest?.total || 0}`, "success");
                     try { if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 240]); } catch (e) {}
                     try { playDing(); } catch (e) {}
+                    pushNotify(newest);
                     const orig = document.title;
                     document.title = "\uD83D\uDD14 New Order!";
-                    setTimeout(() => { document.title = orig; }, 4000);
+                    setTimeout(() => { document.title = orig; }, 5000);
                 }
             } catch (e) {}
         }
