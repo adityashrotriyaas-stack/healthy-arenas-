@@ -44,6 +44,17 @@ export default async function handler(req, res) {
             address, phone,
         }).select().single();
         if (error) return res.status(500).json({ error: error.message });
+
+        const itemNames = (items || []).slice(0, 3).map(i => i.name).join(", ");
+        const more = (items || []).length > 3 ? ` +${items.length - 3} more` : "";
+        const { sendPushToAll } = await import("../push/index.js");
+        sendPushToAll(supabase, {
+            title: "New Order!",
+            body: `\u20B9${total} — ${itemNames}${more}`,
+            tag: "new-order",
+            url: "/",
+        }).catch(() => {});
+
         return res.json({ order: data });
     }
 

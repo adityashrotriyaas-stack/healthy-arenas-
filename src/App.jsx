@@ -5,6 +5,7 @@ import { DISHES, FEATURED_TAGS } from "./data/dishes";
 import { ordersApi } from "./api/client";
 import { orderShortId } from "./lib/stats";
 import { Icon } from "./lib/icons";
+import { subscribePush, unsubscribePush } from "./lib/push";
 
 const AdminPanel = lazy(() => import("./components/AdminPanel").then(m => ({ default: m.AdminPanel })));
 
@@ -23,6 +24,7 @@ function AdminPinModal({ onClose, onUnlock }) {
         try {
             await unlock(pin.replace(/\D/g, ""));
             toast("Welcome, Admin!", "success");
+            subscribePush();
             onUnlock?.();
         } catch (err) {
             setError((err.message && !err.message.includes("Failed to fetch"))
@@ -909,7 +911,7 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                                     onMouseEnter={e => e.currentTarget.style.background = "rgba(255,94,20,0.1)"}
                                     onMouseLeave={e => e.currentTarget.style.background = "none"}
                                 >Dashboard</button>
-                                <button type="button" onClick={() => { logout(); setShowDropdown(false); }}
+                                <button type="button" onClick={() => { unsubscribePush(); logout(); setShowDropdown(false); }}
                                     style={{
                                         width: "100%", background: "none", border: "none", cursor: "pointer",
                                         padding: "12px 16px", textAlign: "left",
@@ -979,7 +981,7 @@ function Nav({ onAdminPin, onOpenAdmin }) {
                     <Icon name="phone" size={14} /> Call Us: 9634038986
                 </a>
                 {user && (
-                    <button type="button" onClick={() => { logout(); setMenuOpen(false); }} style={{
+                    <button type="button" onClick={() => { unsubscribePush(); logout(); setMenuOpen(false); }} style={{
                         background: "transparent", border: `1px solid ${C.border}`,
                         cursor: "pointer", borderRadius: 8, padding: "12px 20px",
                         opacity: menuOpen ? 1 : 0,
