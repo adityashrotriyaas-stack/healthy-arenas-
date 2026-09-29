@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         }
 
         const { data, error } = await supabase.from("orders").insert({
-            user_id, items, total, status: "confirmed",
+            user_id, items, total, status: "pending",
             payment_id, payment_status,
             address, phone,
         }).select().single();

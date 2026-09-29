@@ -1816,26 +1816,22 @@ function Footer({ onSupport }) {
     );
 }
 
-function OrderAlert({ order, onAccept, onDecline }) {
+function OrderAlert({ order, onAccept, onReject, onTimeout }) {
     const [countdown, setCountdown] = useState(30);
-    const vibrateRef = useRef(null);
 
     useEffect(() => {
         if (!navigator.vibrate) return;
-        vibrateRef.current = setInterval(() => {
+        const id = setInterval(() => {
             try { navigator.vibrate([300, 100, 300, 100, 300]); } catch (e) {}
         }, 2000);
-        return () => { clearInterval(vibrateRef.current); try { navigator.vibrate(0); } catch (e) {} };
+        return () => { clearInterval(id); try { navigator.vibrate(0); } catch (e) {} };
     }, []);
 
     useEffect(() => {
-        if (countdown <= 0) { onDecline(); return; }
+        if (countdown <= 0) { onTimeout(); return; }
         const t = setTimeout(() => setCountdown(c => c - 1), 1000);
         return () => clearTimeout(t);
-    }, [countdown, onDecline]);
-
-    const items = (order.items || []).map(i => `${i.name} × ${i.qty}`).join("\n");
-    const sumItems = (order.items || []).map(i => i.name).join(", ");
+    }, [countdown, onTimeout]);
 
     return (
         <div style={{
@@ -1892,17 +1888,17 @@ function OrderAlert({ order, onAccept, onDecline }) {
                     )}
 
                     <div style={{ display: "flex", gap: 10 }}>
-                        <button type="button" onClick={onDecline} style={{
+                        <button type="button" onClick={onReject} style={{
                             flex: 1, background: "rgba(221,51,51,0.1)", border: `1px solid rgba(221,51,51,0.3)`,
                             borderRadius: 12, padding: "14px", cursor: "pointer",
                             fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 700, color: C.red,
-                        }}>Decline</button>
+                        }}>Reject</button>
                         <button type="button" onClick={onAccept} style={{
                             flex: 2, background: `linear-gradient(135deg, ${C.green}, #1A7A42)`,
                             border: "none", borderRadius: 12, padding: "14px", cursor: "pointer",
                             fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 800, color: "#fff",
                             boxShadow: "0 4px 20px rgba(46,204,113,0.3)",
-                        }}>Accept Order</button>
+                        }}>Confirm Order</button>
                     </div>
                 </div>
             </div>
@@ -1913,9 +1909,10 @@ function OrderAlert({ order, onAccept, onDecline }) {
 function AdminNotifier() {
     const { user } = useAuth();
     const { toast } = useToast();
-    const lastCountRef = useRef(null);
+    const seenIdsRef = useRef(null);
+    const alertOrderRef = useRef(null);
     const [alertOrder, setAlertOrder] = useState(null);
-    const [acceptedIds, setAcceptedIds] = useState(new Set());
+    const [doneIds, setDoneIds] = useState(new Set());
     const [snoozedUntil, setSnoozedUntil] = useState(0);
     const audioCtxRef = useRef(null);
     const unlockedRef = useRef(false);
@@ -1975,28 +1972,31 @@ function AdminNotifier() {
             try {
                 const data = await ordersApi.list(null, true);
                 const list = data.orders || [];
-                if (lastCountRef.current === null) lastCountRef.current = list.length;
-                else if (list.length > lastCountRef.current) {
-                    lastCountRef.current = list.length;
-                    const newest = list[0];
-                    if (newest && !acceptedIds.has(newest.id)) {
-                        setAlertOrder(newest);
-                        try { playDing(); } catch (e) {}
-                        pushNotify(newest);
-                        const orig = document.title;
-                        document.title = "\uD83D\uDD14 NEW ORDER! \uD83D\uDD14";
-                        const flash = setInterval(() => {
-                            document.title = document.title.includes("NEW ORDER") ? orig : "\uD83D\uDD14 NEW ORDER! \uD83D\uDD14";
-                        }, 1500);
-                        setTimeout(() => { clearInterval(flash); document.title = orig; }, 15000);
-                    }
+                if (seenIdsRef.current === null) {
+                    seenIdsRef.current = new Set(list.map(o => o.id));
+                    return;
+                }
+                const fresh = list.filter(o => o.status === "pending" && !seenIdsRef.current.has(o.id) && !doneIds.has(o.id));
+                list.forEach(o => seenIdsRef.current.add(o.id));
+                if (fresh.length && !alertOrderRef.current) {
+                    const newest = fresh[0];
+                    setAlertOrder(newest);
+                    alertOrderRef.current = newest.id;
+                    try { playDing(); } catch (e) {}
+                    pushNotify(newest);
+                    const orig = document.title;
+                    document.title = "🔔 NEW ORDER! 🔔";
+                    const flash = setInterval(() => {
+                        document.title = document.title.includes("NEW ORDER") ? orig : "🔔 NEW ORDER! 🔔";
+                    }, 1500);
+                    setTimeout(() => { clearInterval(flash); document.title = orig; }, 15000);
                 }
                 // Re-alert after snooze
-                if (snoozedUntil > 0 && Date.now() >= snoozedUntil && !alertOrder) {
-                    const data2 = await ordersApi.list(null, true);
-                    const unaccepted = (data2.orders || []).find(o => !acceptedIds.has(o.id) && o.status === "pending");
+                if (snoozedUntil > 0 && Date.now() >= snoozedUntil && !alertOrderRef.current) {
+                    const unaccepted = list.find(o => o.status === "pending" && !doneIds.has(o.id));
                     if (unaccepted) {
                         setAlertOrder(unaccepted);
+                        alertOrderRef.current = unaccepted.id;
                         setSnoozedUntil(0);
                         try { playDing(); } catch (e) {}
                     }
@@ -2004,27 +2004,41 @@ function AdminNotifier() {
             } catch (e) {}
         }
         check();
-        const id = setInterval(check, 10000);
+        const id = setInterval(check, 5000);
         return () => { clearInterval(id); document.removeEventListener("click", unlockAudio); };
-    }, [user, toast, acceptedIds, snoozedUntil, alertOrder]);
+    }, [user, toast, doneIds, snoozedUntil]);
 
-    const handleAccept = async (order) => {
+    const stopBuzz = () => { try { navigator.vibrate(0); } catch (e) {} };
+
+    const handleAccept = useCallback(async (order) => {
         try { await ordersApi.updateStatus(order.id, "confirmed"); } catch (e) {}
-        setAcceptedIds(prev => new Set([...prev, order.id]));
+        setDoneIds(prev => new Set([...prev, order.id]));
         setAlertOrder(null);
+        alertOrderRef.current = null;
         setSnoozedUntil(0);
-        try { navigator.vibrate(0); } catch (e) {}
+        stopBuzz();
         toast(`Order #${orderShortId(order.id)} confirmed!`, "success");
-    };
+    }, [toast]);
 
-    const handleDecline = (order) => {
+    const handleReject = useCallback(async (order) => {
+        try { await ordersApi.updateStatus(order.id, "cancelled"); } catch (e) {}
+        setDoneIds(prev => new Set([...prev, order.id]));
         setAlertOrder(null);
+        alertOrderRef.current = null;
+        setSnoozedUntil(0);
+        stopBuzz();
+        toast(`Order #${orderShortId(order.id)} rejected`, "info");
+    }, [toast]);
+
+    const handleTimeout = useCallback(() => {
+        setAlertOrder(null);
+        alertOrderRef.current = null;
         setSnoozedUntil(Date.now() + 60000);
-        try { navigator.vibrate(0); } catch (e) {}
-    };
+        stopBuzz();
+    }, []);
 
     if (!alertOrder) return null;
-    return <OrderAlert order={alertOrder} onAccept={() => handleAccept(alertOrder)} onDecline={() => handleDecline(alertOrder)} />;
+    return <OrderAlert order={alertOrder} onAccept={() => handleAccept(alertOrder)} onReject={() => handleReject(alertOrder)} onTimeout={handleTimeout} />;
 }
 
 export default function App() {

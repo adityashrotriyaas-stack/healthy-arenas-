@@ -13,7 +13,7 @@ export function totals(orders) {
     return {
         revenue,
         completedCount: completed.length,
-        pendingCount: orders.filter(o => o.status === "confirmed").length,
+        pendingCount: orders.filter(o => o.status === "pending").length,
     };
 }
 
