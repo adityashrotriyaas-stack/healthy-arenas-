@@ -1,20 +1,17 @@
-# Task 2 Report: Remove dead categories API + load menu from DB on boot
+# Task 2 Report: Create Service Worker
 
-## Status: DONE
+## What I Did
 
-## Changes
+Created `public/sw.js` with the exact content specified in the plan. The file contains two event listeners:
 
-### `src/api/client.js`
-- Deleted the unused `categoriesApi` export block (lines 49-53).
+1. **`push` handler** — receives Web Push payloads, parses JSON, and shows native OS notifications with configurable title, body, icon, badge, vibrate pattern, tag, and URL.
 
-### `src/lib/contexts.jsx`
-- Added `useEffect(() => { loadFromApi(); }, [loadFromApi]);` inside `DishesProvider` (line 69), so the menu is auto-loaded from `dishesApi.list()` on mount, writing to localStorage + bumping `version`. Customer menu (`getDishes()`) now sees DB dishes after boot.
-- Per dispatcher instruction, kept the existing `loadFromApi` function body untouched (no duplication) and kept it in the exported context value.
+2. **`notificationclick` handler** — closes the notification on click, then either focuses an existing browser tab or opens a new window to the notification's URL.
 
-## Deviations from brief
-- Brief suggested inlining the fetch into the effect and dropping `loadFromApi`; instead reused the existing `loadFromApi` (contexts.jsx:60-68) with a one-line mount effect — smallest diff, satisfies "load from DB on boot". `useEffect` was already imported.
+## Files Created
 
-## Verification
-- `npm run build`: PASS (vite v6.4.3, 35 modules, built in 742ms)
-- Grep for `categoriesApi` in `src/`: no matches
-- Commit: `6351e2c` — "fix: menu loads from DB on boot, drop dead categories API"
+- `C:\healthy-areans\public\sw.js`
+
+## Issues
+
+None. File created exactly as specified in the plan.

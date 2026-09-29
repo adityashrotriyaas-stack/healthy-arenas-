@@ -1,22 +1,28 @@
-# Task 6 Report: Orders tab — real status updates, retry, phone/maps
+# Task 6: Create client-side push module
 
 ## Status: DONE
 
-Commit: `6492046` — "feat: orders tab next-step status, retry, refresh"
+## Files Created/Modified
 
-## Changes (only `src/components/AdminPanel.jsx`)
+| File | Action |
+|------|--------|
+| `src/lib/push.js` | Created |
+| `.env` | Modified (added `VITE_VAPID_PUBLIC_KEY`) |
+| `.env.example` | Modified (added `VITE_VAPID_PUBLIC_KEY` placeholder) |
 
-- **Step 1 (refetch + retry + refresh):** `fetchOrders()` catch already set `setOrdersError(true)` (Task 4 convention). Added a red error banner in the orders tab (mirrors the Home-tab dashboard pattern: message + Retry button calling `fetchOrders`). Added an always-visible "⟳" Refresh button beside the filter chips (icons.jsx has no "refresh" name, so used text glyph).
-- **Step 2 (status buttons):** Removed the flat 4-pill status strip. Added module-level `NEXT = { pending: "confirmed", confirmed: "preparing", preparing: "delivering", delivering: "delivered" }`. Per order: existing `StatusBadge` stays; one orange "→ next" button rendered only when `NEXT[o.status]` exists (hidden for delivered/cancelled). Cancel button kept with its original visibility rule and red-tint style.
-- **Step 3:** Phone/address/maps rendering untouched (kept as-is per brief).
-- **Step 4:** `npm run build` passes (35 modules, built in 689ms).
-- **Step 5:** Committed with the exact brief message.
+## What was done
 
-## Verification
-
-- `npm run build` — success.
-- StatusBadge + NEXT map behavior: next button hidden for `delivered`/`cancelled`; `pending` → "confirmed", `confirming` orders advance along the map.
+- Created `src/lib/push.js` exporting `subscribePush()` and `unsubscribePush()`
+- `subscribePush`: requests notification permission, registers `/sw.js`, subscribes to push with VAPID key, sends subscription to `POST /api/push`
+- `unsubscribePush`: gets current subscription, unsubscribes, sends `DELETE /api/push` with endpoint
+- Added `VITE_VAPID_PUBLIC_KEY` to both `.env` (with real key) and `.env.example` (placeholder)
 
 ## Concerns
 
-- None functional. Minor: `updateOrderStatus` still swallows errors with a toast (unchanged, not in scope). Refresh button uses "⟳" text since no icon named `refresh` exists in `src/lib/icons.jsx`.
+None. Straightforward file creation per plan spec.
+
+## Verification
+
+- `src/lib/push.js` exists and exports both functions
+- `.env.example` includes `VITE_VAPID_PUBLIC_KEY=your-vapid-public-key`
+- `.env` includes `VITE_VAPID_PUBLIC_KEY` with the actual key
